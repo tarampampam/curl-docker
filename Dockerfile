@@ -99,10 +99,11 @@ WORKDIR /tmp/rootfs
 
 # prepare the rootfs for scratch
 RUN set -x \
-    && mkdir ./bin ./etc \
+    && mkdir -p ./bin ./etc/ssl \
     && mv "/tmp/curl-${CURL_VERSION}/src/curl" ./bin/curl \
     && echo 'curl:x:10001:10001::/nonexistent:/sbin/nologin' > ./etc/passwd \
-    && echo 'curl:x:10001:' > ./etc/group
+    && echo 'curl:x:10001:' > ./etc/group \
+    && cp -R /etc/ssl/certs ./etc/ssl/certs
 
 # just for a test
 RUN /tmp/rootfs/bin/curl --fail -o /dev/null https://github.com/robots.txt
