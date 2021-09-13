@@ -76,5 +76,5 @@ jobs: # Docs: <https://git.io/JvxXE>
         working-directory: .artifact
         run: docker load < docker-image.tar
 
-      - name: Start server without auth setup
+      - name: Try to run
         run: docker run --rm curl:local https://github.com/
