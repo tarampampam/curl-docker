@@ -111,6 +111,15 @@ RUN /tmp/rootfs/bin/curl --fail -o /dev/null https://github.com/robots.txt
 # use empty filesystem
 FROM scratch
 
+LABEL \
+    # Docs: <https://github.com/opencontainers/image-spec/blob/master/annotations.md>
+    org.opencontainers.image.title="curl" \
+    org.opencontainers.image.description="curl (static binary file) in a scratch docker image" \
+    org.opencontainers.image.url="https://github.com/tarampampam/curl-docker" \
+    org.opencontainers.image.source="https://github.com/tarampampam/curl-docker" \
+    org.opencontainers.image.vendor="tarampampam" \
+    org.opencontainers.image.licenses="WTFPL"
+
 # use an unprivileged user
 USER curl:curl
 
