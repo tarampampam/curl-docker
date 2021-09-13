@@ -12,10 +12,10 @@
 
 ## Why this image created?
 
-As you probably know, `curl` consists of two parts - the library of the same name and dynamically linked executable file. For using `curl` in docker images based on `scratch` (empty file system) we have two options:
+As you probably know, `curl` consists of two parts - the library with the same name and dynamically linked executable file. For using `curl` in docker images based on `scratch` (empty file system) we have two options:
 
 - Put all required for `curl` libraries into the image
-- Compile `curl` as a static binary
+- Compile `curl` as a **static** binary
 
 This repository contains dockerfile with the second way.
 
@@ -27,14 +27,45 @@ The main idea was [looked here](https://github.com/moparisthebest/static-curl).
 
 [![image stats](https://dockeri.co/image/tarampampam/curl)][link_docker_tags]
 
-All supported image tags [can be found here][link_docker_tags].
+Registry                                            | Image
+--------------------------------------------------- | --------------------------
+[Docker Hub][link_docker_tags]                      | `tarampampam/curl`
+[GitHub Container Registry][link_github_containers] | `ghcr.io/tarampampam/curl`
+
+Following platforms for this image are available:
+
+```bash
+$ docker run --rm mplatform/mquery tarampampam/curl:latest
+Image: tarampampam/curl:latest (digest: sha256:76a400ea34c0e66d20723c7a50b7a665dbd7dcdcc8585d4cc98a6223d71d7d90)
+ * Manifest List: Yes (Image type: application/vnd.docker.distribution.manifest.list.v2+json)
+ * Supported platforms:
+   - linux/amd64
+   - linux/386
+   - linux/arm64
+   - linux/arm/v6
+   - linux/arm/v7
+```
 
 ## How can I use this?
 
-For example:
+For example - as a docker healthcheck:
 
 ```Dockerfile
-# ...WIP...
+# use empty filesystem
+FROM scratch
+
+# import some executable application
+COPY --from=containous/whoami:v1.5.0 /whoami /whoami
+
+# import curl from current repository image
+COPY --from=tarampampam/curl:7.78.0 /bin/curl /bin/curl
+
+# Docs: <https://docs.docker.com/engine/reference/builder/#healthcheck>
+HEALTHCHECK --interval=5s --timeout=2s --retries=2 --start-period=2s CMD [ \
+    "curl", "--fail", "http://127.0.0.1:80/" \
+]
+
+ENTRYPOINT ["/whoami"]
 ```
 
 ## Releasing
@@ -82,4 +113,5 @@ WTFPL. Use anywhere for your pleasure.
 [link_license]:https://github.com/tarampampam/curl-docker/blob/master/LICENSE
 [link_docker_tags]:https://hub.docker.com/r/tarampampam/curl/tags
 [link_docker_hub]:https://hub.docker.com/r/tarampampam/curl/
+[link_github_containers]:https://github.com/tarampampam/curl-docker/pkgs/container/curl
 [link_curl]:https://curl.se/
