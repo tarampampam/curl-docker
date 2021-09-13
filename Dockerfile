@@ -114,6 +114,6 @@ FROM scratch
 USER curl:curl
 
 # import from builder
-COPY --from=builder /rootfs /
+COPY --from=builder /tmp/rootfs /
 
 ENTRYPOINT ["/bin/curl"]
