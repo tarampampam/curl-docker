@@ -76,5 +76,11 @@ jobs: # Docs: <https://git.io/JvxXE>
         working-directory: .artifact
         run: docker load < docker-image.tar
 
-      - name: Try to run
-        run: docker run --rm curl:local https://github.com/
+      - name: Try to run (github.com)
+        run: docker run --rm curl:local --fail https://github.com/
+
+      - name: Try to run (1.1.1.1)
+        run: docker run --rm curl:local --fail https://1.1.1.1/
+
+      - name: Try to run (example.com)
+        run: docker run --rm curl:local --fail http://example.com/
