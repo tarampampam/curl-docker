@@ -29,9 +29,9 @@ RUN set -x \
 # change working directory to the directory with curl sources
 WORKDIR "/tmp/curl-${CURL_VERSION}"
 
-# temp patch so it will build statically https://github.com/curl/curl/pull/7476
-COPY ./static.patch .
-RUN patch -p1 < ./static.patch
+# apply patches to the source code
+COPY ./patches ./patches
+RUN for f in ./patches/*.patch; do patch -p1 < "$f"; done
 
 ENV CC="clang" \
     LDFLAGS="-static" \

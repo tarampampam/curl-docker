@@ -6,6 +6,7 @@ index 734373187..37e3a1564 100644
  curl_LDADD = $(top_builddir)/lib/libcurl.la @NSS_LIBS@ @SSL_LIBS@ @ZLIB_LIBS@ @CURL_NETWORK_AND_TIME_LIBS@
  endif
 
++# https://github.com/curl/curl/pull/7476
 +curl_LDFLAGS = $(curl_LDFLAGS)
 +curl_CPPFLAGS = $(AM_CPPFLAGS)
 +

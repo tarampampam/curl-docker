@@ -17,13 +17,20 @@ As you probably know, `curl` consists of two parts - the library with the same n
 - Put all required for `curl` libraries into the image
 - Compile `curl` as a **static** binary
 
-This repository contains dockerfile with the second way.
+This repository contains dockerfile with the second way (the main idea was [looked here](https://github.com/moparisthebest/static-curl)).
 
 > Important note: some `curl` features (lake `gopher`, `imap`, `proxy`, and others were disabled) for binary file size reasons.
 
-The main idea was [looked here](https://github.com/moparisthebest/static-curl).
+Another important change is that when the `--fail` flag is used, the exit code is **1** _(instead of 22)_. You can read more details about the patch [here](patches/fail-exit-code.patch). This was made for use in docker healthcheck (the possible exit codes for docker healcheck are: 0 _(success, the container is healthy and ready for use)_ and 1 _(unhealthy - the container is not working correctly)_):
 
-## Supported tags
+```bash
+$ docker run --rm tarampampam/curl -s --fail --show-error https://httpbin.org/status/401
+curl: (22) The requested URL returned error: 401
+$ echo "Exit code: $?"
+Exit code: 1
+```
+
+## Image
 
 [![image stats](https://dockeri.co/image/tarampampam/curl)][link_docker_tags]
 
@@ -48,7 +55,7 @@ Image: tarampampam/curl:latest (digest: sha256:76a400ea34c0e66d20723c7a50b7a665d
 
 ## How can I use this?
 
-For example - as a docker healthcheck:
+For example - as a docker healthcheck (note - we use `scratch` as a base):
 
 ```Dockerfile
 # use empty filesystem
@@ -66,6 +73,23 @@ HEALTHCHECK --interval=5s --timeout=2s --retries=2 --start-period=2s CMD [ \
 ]
 
 ENTRYPOINT ["/whoami"]
+```
+
+After that you can build this image, run, and watch the state:
+
+```bash
+$ docker build --tag healthcheck-test:local .
+...
+Successfully built 72bf22424af7
+Successfully tagged healthcheck-test:local
+
+$ docker run --rm -d --name healthcheck-test healthcheck-test:local
+b3f20332ac19b42dfed03021c0b90b3650b9a7efbaea7c8800d35551e43d35d7
+
+$ docker ps --filter 'name=healthcheck-test' --format '{{.Status}}'
+Up 1 minutes (healthy)
+
+$ docker kill healthcheck-test
 ```
 
 ## Releasing
