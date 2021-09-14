@@ -1,8 +1,8 @@
 diff --git a/src/Makefile.am b/src/Makefile.am
-index 734373187..37e3a1564 100644
+index 7343731..52ff4cd 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -66,6 +66,9 @@ else
+@@ -66,6 +66,10 @@ else
  curl_LDADD = $(top_builddir)/lib/libcurl.la @NSS_LIBS@ @SSL_LIBS@ @ZLIB_LIBS@ @CURL_NETWORK_AND_TIME_LIBS@
  endif
 
