@@ -21,11 +21,12 @@ This repository contains dockerfile with the second way (the main idea was [look
 
 > Important note: some `curl` features (lake `gopher`, `imap`, `proxy`, and others were disabled) for binary file size reasons.
 
-Another important change is that when the `--fail` flag is used, the exit code is **1** _(instead of 22)_. You can read more details about the patch [here](patches/fail-exit-code.patch). This was made for use in docker healthcheck (the possible exit codes for docker healcheck are: 0 _(success, the container is healthy and ready for use)_ and 1 _(unhealthy - the container is not working correctly)_):
+Another important change is that when the `--fail` flag is used, the exit code on error is **1** _(instead of 22)_. You can read more details about the patch [here](patches/fail-exit-code.patch). This was made for use in docker healthcheck (the possible exit codes for docker healcheck are: 0 _(success, the container is healthy and ready for use)_ and 1 _(unhealthy - the container is not working correctly)_):
 
 ```bash
 $ docker run --rm tarampampam/curl -s --fail --show-error https://httpbin.org/status/401
 curl: (22) The requested URL returned error: 401
+
 $ echo "Exit code: $?"
 Exit code: 1
 ```
@@ -43,7 +44,7 @@ Following platforms for this image are available:
 
 ```bash
 $ docker run --rm mplatform/mquery tarampampam/curl:latest
-Image: tarampampam/curl:latest (digest: sha256:76a400ea34c0e66d20723c7a50b7a665dbd7dcdcc8585d4cc98a6223d71d7d90)
+Image: tarampampam/curl:latest
  * Manifest List: Yes (Image type: application/vnd.docker.distribution.manifest.list.v2+json)
  * Supported platforms:
    - linux/amd64
