@@ -84,3 +84,8 @@ jobs: # Docs: <https://git.io/JvxXE>
 
       - name: Try to run (example.com)
         run: docker run --rm curl:local --fail http://example.com/
+
+      - name: Should exit with code 1
+        run: |
+          docker run --rm curl:local --fail "https://httpbin.org/status/401" || ec=$?
+          test $ec -eq 1 && echo "all is ok (code = $ec)" || ( echo "Wrong exit code: $ec"; exit 1 )
