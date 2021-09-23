@@ -2,9 +2,11 @@ name: tests
 
 on:
   push:
-    branches: [master]
+    branches: [master, main]
+    paths-ignore: ['**.md']
     tags-ignore: ['**']
-  pull_request: {}
+  pull_request:
+    paths-ignore: ['**.md']
 
 jobs: # Docs: <https://git.io/JvxXE>
   gitleaks:
@@ -13,8 +15,7 @@ jobs: # Docs: <https://git.io/JvxXE>
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+        with: {fetch-depth: 0}
 
       - name: Check for GitLeaks
         uses: zricethezav/gitleaks-action@v1.6.0 # Action page: <https://github.com/zricethezav/gitleaks-action>
