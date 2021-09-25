@@ -19,7 +19,7 @@ As you probably know, `curl` consists of two parts - the library with the same n
 
 This repository contains dockerfile with the second way (the main idea was [looked here](https://github.com/moparisthebest/static-curl)).
 
-> Important note: some `curl` features (lake `gopher`, `imap`, `proxy`, and others were disabled) for binary file size reasons.
+> Important note: some `curl` features (like `gopher`, `imap`, `proxy`, and others were disabled) for binary file size reasons.
 
 Another important change is that when the `--fail` flag is used, the exit code on error is **1** _(instead of 22)_. You can read more details about the patch [here](patches/fail-exit-code.patch). This was made for use in docker healthcheck (the possible exit codes for docker healcheck are: 0 _(success, the container is healthy and ready for use)_ and 1 _(unhealthy - the container is not working correctly)_):
 
