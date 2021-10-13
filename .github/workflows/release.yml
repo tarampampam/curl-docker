@@ -43,5 +43,5 @@ jobs:
           tags: |
             tarampampam/curl:${{ steps.slug.outputs.version }}
             tarampampam/curl:latest
-            ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${{ steps.slug.outputs.version }}
-            ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:latest
+            ghcr.io/${{ github.actor }}/curl:${{ steps.slug.outputs.version }}
+            ghcr.io/${{ github.actor }}/curl:latest
