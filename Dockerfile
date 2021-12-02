@@ -5,7 +5,7 @@
 
 FROM alpine:3.15 as builder
 
-ARG CURL_VERSION="7.78.0"
+ARG CURL_VERSION="7.79.0"
 
 # install system dependencies
 RUN apk add \
