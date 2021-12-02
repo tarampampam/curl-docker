@@ -3,7 +3,7 @@
 # Building script: <https://github.com/moparisthebest/static-curl/blob/master/build.sh>
 # Official curl dockerfile: <https://github.com/curl/curl-docker/blob/master/alpine/latest/Dockerfile>
 
-FROM alpine:3.15.0 as builder
+FROM alpine:3.15 as builder
 
 ARG CURL_VERSION="7.78.0"
 
