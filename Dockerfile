@@ -15,6 +15,7 @@ RUN apk add \
     nghttp2-dev \
     nghttp2-static \
     openssl-libs-static \
+    zlib-static \
     autoconf \
     automake \
     libtool
@@ -83,7 +84,7 @@ RUN ./configure \
 
 # compile the curl
 RUN set -x \
-    && make -j$(nproc) V=1 curl_LDFLAGS=-all-static \
+    && make -j$(nproc) V=1 LDFLAGS="-static -all-static" \
     && strip ./src/curl
 
 # exit with error code 1 if the executable is dynamic, not static
