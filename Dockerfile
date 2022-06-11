@@ -5,7 +5,7 @@
 
 FROM alpine:3.16 as builder
 
-# renovate: datasource=github-tags depName=z3APA3A/3proxy
+# renovate: datasource=github-tags depName=curl/curl
 ARG CURL_VERSION="7.83.0"
 
 # install system dependencies
