@@ -5,7 +5,8 @@
 
 FROM alpine:3.16 as builder
 
-ARG CURL_VERSION="7.83.1"
+# renovate: datasource=github-tags depName=z3APA3A/3proxy
+ARG CURL_VERSION="7.83.0"
 
 # install system dependencies
 RUN apk add \
