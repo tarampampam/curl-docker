@@ -84,7 +84,7 @@ jobs: # Docs: <https://git.io/JvxXE>
         run: docker run --rm curl:local --fail https://1.1.1.1/
 
       - name: Try to run (example.com)
-        run: docker run --rm curl:local --fail http://example.com/
+        run: docker run --rm curl:local --fail http://ppa.launchpad.net/
 
       - name: Should exit with code 1
         run: |
