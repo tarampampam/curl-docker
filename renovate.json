@@ -1,5 +1,17 @@
 {
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "labels": ["dependencies"],
+    "assignees": ["tarampampam"],
+    "enabledManagers": ["regex"],
     "extends": [
-        "config:base"
+        "config:base",
+        ":disableDependencyDashboard"
+    ],
+    "regexManagers": [
+        {
+            "fileMatch": ["^Dockerfile$"],
+            "matchStrings": ["datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\s(ARG|ENV) .*?_(VERSION|VER)=(?<currentValue>.*)\\s"],
+            "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+        }
     ]
 }
