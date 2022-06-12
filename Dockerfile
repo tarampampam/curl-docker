@@ -5,7 +5,8 @@
 
 FROM alpine:3.16 as builder
 
-ARG CURL_VERSION="7.83.1"
+# renovate: source=github-tags name=curl/curl versioning=regex:^(?:curl-)?(?<major>\d+)_(?<minor>\d+)_(?<patch>\d+)$ extractVersion=^(?:curl-)?(?<version>[\d_]+)$
+ARG CURL_VERSION="7_83_1"
 
 # install system dependencies
 RUN apk add \
@@ -24,11 +25,14 @@ WORKDIR /tmp
 
 # download curl sources
 RUN set -x \
-    && wget -O curl.tar.gz "https://curl.haxx.se/download/curl-${CURL_VERSION}.tar.gz" \
-    && tar xzf curl.tar.gz
+    && CURL_VERSION=$(echo $CURL_VERSION | sed s/_/./g) \
+    && wget -O curl.tar.gz "https://curl.haxx.se/download/curl-$CURL_VERSION.tar.gz" \
+    && tar xzf curl.tar.gz \
+    && rm curl.tar.gz \
+    && mv ./curl-* ./src
 
 # change working directory to the directory with curl sources
-WORKDIR "/tmp/curl-${CURL_VERSION}"
+WORKDIR /tmp/src
 
 # apply patches to the source code
 COPY ./patches ./patches
@@ -101,7 +105,7 @@ WORKDIR /tmp/rootfs
 # prepare the rootfs for scratch
 RUN set -x \
     && mkdir -p ./bin ./etc/ssl \
-    && mv "/tmp/curl-${CURL_VERSION}/src/curl" ./bin/curl \
+    && mv "/tmp/src/src/curl" ./bin/curl \
     && echo 'curl:x:10001:10001::/nonexistent:/sbin/nologin' > ./etc/passwd \
     && echo 'curl:x:10001:' > ./etc/group \
     && cp -R /etc/ssl/certs ./etc/ssl/certs
