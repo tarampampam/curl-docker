@@ -6,7 +6,7 @@
 FROM alpine:3.16 as builder
 
 # renovate: source=github-tags name=curl/curl versioning=regex:^(?:curl-)?(?<major>\d+)_(?<minor>\d+)_(?<patch>\d+)$ extractVersion=^(?:curl-)?(?<version>[\d_]+)$
-ARG CURL_VERSION="7_84_0"
+ARG CURL_VERSION="7_85_0"
 
 # install system dependencies
 RUN apk add \
