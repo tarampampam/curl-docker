@@ -114,9 +114,9 @@ RUN set -x \
 RUN /tmp/rootfs/bin/curl --fail -o /dev/null https://github.com/robots.txt
 
 # e.g.: `docker build --rm --build-arg "BASE_IMAGE=alpine:latest" -f ./Dockerfile .`
-ARG BASE_IMAGE="scratch"
+ARG BASE_IMAGE
 
-FROM ${BASE_IMAGE}
+FROM ${BASE_IMAGE:-scratch}
 
 LABEL \
     # Docs: <https://github.com/opencontainers/image-spec/blob/master/annotations.md>
