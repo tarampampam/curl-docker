@@ -3,10 +3,13 @@
 # Building script: <https://github.com/moparisthebest/static-curl/blob/master/build.sh>
 # Official curl dockerfile: <https://github.com/curl/curl-docker/blob/master/alpine/latest/Dockerfile>
 
-FROM alpine:3.16 as builder
+# e.g.: `docker build --rm --build-arg "BASE_IMAGE=alpine:latest" -f ./Dockerfile .`
+ARG BASE_IMAGE="scratch"
 
 # renovate: source=github-tags name=curl/curl versioning=regex:^(?:curl-)?(?<major>\d+)_(?<minor>\d+)_(?<patch>\d+)$ extractVersion=^(?:curl-)?(?<version>[\d_]+)$
 ARG CURL_VERSION="7_86_0"
+
+FROM alpine:3.16 as builder
 
 # install system dependencies
 RUN apk add \
@@ -113,15 +116,12 @@ RUN set -x \
 # just for a test
 RUN /tmp/rootfs/bin/curl --fail -o /dev/null https://github.com/robots.txt
 
-# e.g.: `docker build --rm --build-arg "BASE_IMAGE=alpine:latest" -f ./Dockerfile .`
-ARG BASE_IMAGE
-
-FROM ${BASE_IMAGE:-scratch}
+FROM ${BASE_IMAGE}
 
 LABEL \
     # Docs: <https://github.com/opencontainers/image-spec/blob/master/annotations.md>
     org.opencontainers.image.title="curl" \
-    org.opencontainers.image.description="curl (static binary file) in a scratch docker image" \
+    org.opencontainers.image.description="curl (static binary file) in docker image" \
     org.opencontainers.image.url="https://github.com/tarampampam/curl-docker" \
     org.opencontainers.image.source="https://github.com/tarampampam/curl-docker" \
     org.opencontainers.image.vendor="tarampampam" \

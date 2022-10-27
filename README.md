@@ -95,11 +95,11 @@ $ docker kill healthcheck-test
 
 ## Releasing
 
-New versions publishing is very simple - just make required changes in this repository, update the [changelog file](CHANGELOG.md) and "publish" new release using repo releases page.
+New versions publishing is very simple - just make required changes in this repository and "publish" new release using repo releases page.
 
 Docker images will be build and published automatically.
 
-> New release will overwrite the `latest` docker image tag in both registers.
+> The new release will overwrite the `latest` and `latest-alpine` docker image tags in both registers.
 
 ## Support
 
