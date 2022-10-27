@@ -6,10 +6,10 @@
 # e.g.: `docker build --rm --build-arg "BASE_IMAGE=alpine:latest" -f ./Dockerfile .`
 ARG BASE_IMAGE="scratch"
 
-# renovate: source=github-tags name=curl/curl versioning=regex:^(?:curl-)?(?<major>\d+)_(?<minor>\d+)_(?<patch>\d+)$ extractVersion=^(?:curl-)?(?<version>[\d_]+)$
-ARG CURL_VERSION="7_86_0"
-
 FROM alpine:3.16 as builder
+
+# renovate: source=github-tags name=curl/curl versioning=regex:^(?:curl-)?(?<major>\d+)_(?<minor>\d+)_(?<patch>\d+)$ extractVersion=^(?:curl-)?(?<version>[\d_]+)$
+ENV CURL_VERSION="7_86_0"
 
 # install system dependencies
 RUN apk add \
