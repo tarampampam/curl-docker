@@ -33,12 +33,12 @@ Exit code: 1
 
 ## Image
 
-[![image stats](https://dockeri.co/image/tarampampam/curl)][link_docker_tags]
+| Registry                                            | Image                      |
+|-----------------------------------------------------|----------------------------|
+| [Docker Hub][link_docker_tags]                      | `tarampampam/curl`         |
+| [GitHub Container Registry][link_github_containers] | `ghcr.io/tarampampam/curl` |
 
-Registry                                            | Image
---------------------------------------------------- | --------------------------
-[Docker Hub][link_docker_tags]                      | `tarampampam/curl`
-[GitHub Container Registry][link_github_containers] | `ghcr.io/tarampampam/curl`
+> Images, based on the `alpine` image has a postfix `-alpine` in the tag name, eg.: `tarampampam/curl:7.76.0-alpine`.
 
 Following platforms for this image are available:
 
@@ -95,18 +95,18 @@ $ docker kill healthcheck-test
 
 ## Releasing
 
-New versions publishing is very simple - just make required changes in this repository, update the [changelog file](CHANGELOG.md) and "publish" new release using repo releases page.
+New versions publishing is very simple - just make required changes in this repository and "publish" new release using repo releases page.
 
 Docker images will be build and published automatically.
 
-> New release will overwrite the `latest` docker image tag in both registers.
+> The new release will overwrite the `latest` and `latest-alpine` docker image tags in both registers.
 
 ## Support
 
 [![Issues][badge_issues]][link_issues]
 [![Issues][badge_pulls]][link_pulls]
 
-If you will find any package errors, please, [make an issue][link_create_issue] in current repository.
+If you find any package errors, please, [make an issue][link_create_issue] in current repository.
 
 ## License
 

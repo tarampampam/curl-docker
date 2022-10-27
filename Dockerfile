@@ -3,10 +3,13 @@
 # Building script: <https://github.com/moparisthebest/static-curl/blob/master/build.sh>
 # Official curl dockerfile: <https://github.com/curl/curl-docker/blob/master/alpine/latest/Dockerfile>
 
+# e.g.: `docker build --rm --build-arg "BASE_IMAGE=alpine:latest" -f ./Dockerfile .`
+ARG BASE_IMAGE="scratch"
+
 FROM alpine:3.16 as builder
 
 # renovate: source=github-tags name=curl/curl versioning=regex:^(?:curl-)?(?<major>\d+)_(?<minor>\d+)_(?<patch>\d+)$ extractVersion=^(?:curl-)?(?<version>[\d_]+)$
-ARG CURL_VERSION="7_86_0"
+ENV CURL_VERSION="7_86_0"
 
 # install system dependencies
 RUN apk add \
@@ -105,7 +108,7 @@ WORKDIR /tmp/rootfs
 # prepare the rootfs for scratch
 RUN set -x \
     && mkdir -p ./bin ./etc/ssl \
-    && mv "/tmp/src/src/curl" ./bin/curl \
+    && mv /tmp/src/src/curl ./bin/curl \
     && echo 'curl:x:10001:10001::/nonexistent:/sbin/nologin' > ./etc/passwd \
     && echo 'curl:x:10001:' > ./etc/group \
     && cp -R /etc/ssl/certs ./etc/ssl/certs
@@ -113,13 +116,12 @@ RUN set -x \
 # just for a test
 RUN /tmp/rootfs/bin/curl --fail -o /dev/null https://github.com/robots.txt
 
-# use empty filesystem
-FROM scratch
+FROM ${BASE_IMAGE}
 
 LABEL \
     # Docs: <https://github.com/opencontainers/image-spec/blob/master/annotations.md>
     org.opencontainers.image.title="curl" \
-    org.opencontainers.image.description="curl (static binary file) in a scratch docker image" \
+    org.opencontainers.image.description="curl (static binary file) in docker image" \
     org.opencontainers.image.url="https://github.com/tarampampam/curl-docker" \
     org.opencontainers.image.source="https://github.com/tarampampam/curl-docker" \
     org.opencontainers.image.vendor="tarampampam" \
