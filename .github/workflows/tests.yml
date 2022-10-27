@@ -17,28 +17,24 @@ jobs: # Docs: <https://git.io/JvxXE>
     name: Gitleaks
     runs-on: ubuntu-20.04
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with: {fetch-depth: 0}
 
-      - name: Check for GitLeaks
-        uses: gacts/gitleaks@v1 # Action page: <https://github.com/gacts/gitleaks>
+      - uses: gacts/gitleaks@v1 # Action page: <https://github.com/gacts/gitleaks>
 
   build-image:
     name: Build docker image
     runs-on: ubuntu-20.04
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Build docker image
-        run: docker build -f ./Dockerfile --tag curl:local .
+      - run: docker build -f ./Dockerfile --tag curl:local .
 
-      - name: Save docker image
-        run: docker save curl:local > ./docker-image.tar
+      - run: docker build -f ./Dockerfile --build-arg "BASE_IMAGE=alpine:latest" --tag curl:local-alpine .
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+      - run: docker save curl:local > ./docker-image.tar
+
+      - uses: actions/upload-artifact@v3
         with:
           name: docker-image
           path: ./docker-image.tar
@@ -49,18 +45,15 @@ jobs: # Docs: <https://git.io/JvxXE>
     runs-on: ubuntu-20.04
     needs: [build-image]
     steps:
-      - name: Download built docker image
-        uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v3
         with:
           name: docker-image
           path: .artifact
 
-      - name: Prepare image to run
-        working-directory: .artifact
+      - working-directory: .artifact
         run: docker load < docker-image.tar
 
-      - name: Scan image
-        uses: anchore/scan-action@v3 # action page: <https://github.com/anchore/scan-action>
+      - uses: anchore/scan-action@v3 # action page: <https://github.com/anchore/scan-action>
         with:
           image: curl:local
           fail-build: true
@@ -71,8 +64,7 @@ jobs: # Docs: <https://git.io/JvxXE>
     runs-on: ubuntu-20.04
     needs: [build-image]
     steps:
-      - name: Download built docker image
-        uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v3
         with:
           name: docker-image
           path: .artifact
@@ -87,7 +79,7 @@ jobs: # Docs: <https://git.io/JvxXE>
       - name: Try to run (1.1.1.1)
         run: docker run --rm curl:local --fail https://1.1.1.1/
 
-      - name: Try to run (example.com)
+      - name: Try to run (ppa.launchpad.net)
         run: docker run --rm curl:local --fail http://ppa.launchpad.net/
 
       - name: Should exit with code 1

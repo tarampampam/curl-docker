@@ -105,7 +105,7 @@ WORKDIR /tmp/rootfs
 # prepare the rootfs for scratch
 RUN set -x \
     && mkdir -p ./bin ./etc/ssl \
-    && mv "/tmp/src/src/curl" ./bin/curl \
+    && mv /tmp/src/src/curl ./bin/curl \
     && echo 'curl:x:10001:10001::/nonexistent:/sbin/nologin' > ./etc/passwd \
     && echo 'curl:x:10001:' > ./etc/group \
     && cp -R /etc/ssl/certs ./etc/ssl/certs
@@ -113,8 +113,10 @@ RUN set -x \
 # just for a test
 RUN /tmp/rootfs/bin/curl --fail -o /dev/null https://github.com/robots.txt
 
-# use empty filesystem
-FROM scratch
+# e.g.: `docker build --rm --build-arg "BASE_IMAGE=alpine:latest" -f ./Dockerfile .`
+ARG BASE_IMAGE="scratch"
+
+FROM ${BASE_IMAGE}
 
 LABEL \
     # Docs: <https://github.com/opencontainers/image-spec/blob/master/annotations.md>
