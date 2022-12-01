@@ -6,7 +6,7 @@
 # e.g.: `docker build --rm --build-arg "BASE_IMAGE=alpine:latest" -f ./Dockerfile .`
 ARG BASE_IMAGE="scratch"
 
-FROM alpine:3.16 as builder
+FROM alpine:3.17 as builder
 
 # renovate: source=github-tags name=curl/curl versioning=regex:^(?:curl-)?(?<major>\d+)_(?<minor>\d+)_(?<patch>\d+)$ extractVersion=^(?:curl-)?(?<version>[\d_]+)$
 ENV CURL_VERSION="7_86_0"
@@ -114,7 +114,7 @@ RUN set -x \
     && cp -R /etc/ssl/certs ./etc/ssl/certs
 
 # just for a test
-RUN /tmp/rootfs/bin/curl --fail -o /dev/null https://github.com/robots.txt
+RUN /tmp/rootfs/bin/curl --fail -o /dev/null https://cloudflare.com/robots.txt
 
 FROM ${BASE_IMAGE}
 
