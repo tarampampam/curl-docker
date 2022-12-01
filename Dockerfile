@@ -114,7 +114,7 @@ RUN set -x \
     && cp -R /etc/ssl/certs ./etc/ssl/certs
 
 # just for a test
-RUN /tmp/rootfs/bin/curl --fail -o /dev/null https://github.com/robots.txt
+RUN /tmp/rootfs/bin/curl --fail -o /dev/null https://cloudflare.com/robots.txt
 
 FROM ${BASE_IMAGE}
 
