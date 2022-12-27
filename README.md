@@ -112,8 +112,8 @@ If you find any package errors, please, [make an issue][link_create_issue] in cu
 
 WTFPL. Use anywhere for your pleasure.
 
-[badge_build_status]:https://img.shields.io/github/workflow/status/tarampampam/curl-docker/tests/master?logo=github&label=build
-[badge_release_status]:https://img.shields.io/github/workflow/status/tarampampam/curl-docker/release?logo=github&label=release
+[badge_build_status]:https://img.shields.io/github/actions/workflow/status/tarampampam/curl-docker/tests.yml?branch=master&logo=github&label=build
+[badge_release_status]:https://img.shields.io/github/actions/workflow/status/tarampampam/curl-docker/release.yml?logo=github&label=release
 [badge_issues]:https://img.shields.io/github/issues/tarampampam/curl-docker.svg?style=flat-square&maxAge=180
 [badge_pulls]:https://img.shields.io/github/issues-pr/tarampampam/curl-docker.svg?style=flat-square&maxAge=180
 [badge_license]:https://img.shields.io/github/license/tarampampam/curl-docker.svg?longCache=true
