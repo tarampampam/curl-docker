@@ -29,7 +29,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/build-push-action@v3
+      - uses: docker/build-push-action@v4
         with:
           context: .
           file: Dockerfile
@@ -41,7 +41,7 @@ jobs:
             ghcr.io/${{ github.actor }}/curl:${{ steps.slug.outputs.version }}
             ghcr.io/${{ github.actor }}/curl:latest
 
-      - uses: docker/build-push-action@v3
+      - uses: docker/build-push-action@v4
         with:
           context: .
           file: Dockerfile
