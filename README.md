@@ -35,10 +35,10 @@ Exit code: 1
 
 | Registry                                            | Image                      |
 |-----------------------------------------------------|----------------------------|
-| [Docker Hub][link_docker_tags]                      | `tarampampam/curl`         |
 | [GitHub Container Registry][link_github_containers] | `ghcr.io/tarampampam/curl` |
+| [Docker Hub][link_docker_tags]                      | `tarampampam/curl`         |
 
-> Images, based on the `alpine` image has a postfix `-alpine` in the tag name, eg.: `tarampampam/curl:7.76.0-alpine`.
+> Images, based on the `alpine` image has a postfix `-alpine` in the tag name, eg.: `tarampampam/curl:8.0.1-alpine`.
 
 Following platforms for this image are available:
 
@@ -63,10 +63,10 @@ For example - as a docker healthcheck (note - we use `scratch` as a base):
 FROM scratch
 
 # import some executable application
-COPY --from=containous/whoami:v1.5.0 /whoami /whoami
+COPY --from=docker.io/containous/whoami:v1.5.0 /whoami /whoami
 
 # import curl from current repository image
-COPY --from=tarampampam/curl:7.78.0 /bin/curl /bin/curl
+COPY --from=ghcr.io/tarampampam/curl:8.0.1 /bin/curl /bin/curl
 
 # Docs: <https://docs.docker.com/engine/reference/builder/#healthcheck>
 HEALTHCHECK --interval=5s --timeout=2s --retries=2 --start-period=2s CMD [ \
