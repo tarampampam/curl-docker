@@ -61,6 +61,16 @@ jobs: # Docs: <https://git.io/JvxXE>
           podman --root /tmp/podman run --rm --entrypoint '' localhost/curl:alpine sh -c 'cat /etc/os-release'
           podman --root /tmp/podman run --rm localhost/curl:alpine --version
 
+      - run: podman --root /tmp/podman save localhost/curl:default > ./curl-default.tar
+
+      - uses: actions/upload-artifact@v3
+        with: {name: curl-default, path: ./curl-default.tar, retention-days: 1}
+
+      - run: podman --root /tmp/podman save localhost/curl:alpine > ./curl-alpine.tar
+
+      - uses: actions/upload-artifact@v3
+        with: {name: curl-alpine, path: ./curl-alpine.tar, retention-days: 1}
+
 #      - run: docker build -f ./Dockerfile --build-arg "BASE_IMAGE=alpine:latest" --tag curl:local-alpine .
 #
 #      - run: docker save curl:local > ./docker-image.tar
