@@ -17,7 +17,7 @@ env:
   GITHUB_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/curl # GitHub registry
   DOCKER_IMAGE_NAME: tarampampam/curl # DockerHub registry
 
-jobs: # Docs: <https://git.io/JvxXE>
+jobs:
   gitleaks:
     name: 🔐 Check for GitLeaks
     runs-on: ubuntu-latest
