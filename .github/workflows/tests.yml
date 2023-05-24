@@ -50,9 +50,7 @@ jobs: # Docs: <https://git.io/JvxXE>
 
       - {uses: gacts/github-slug@v1, id: slug}
 
-      - run: |
-          podman version
-          podman build --help
+      - run: sudo apt update && sudo apt install podman -y
 
       - name: Build the image
         uses: gacts/run-and-post-run@v1
