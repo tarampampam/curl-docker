@@ -27,9 +27,17 @@ jobs: # Docs: <https://git.io/JvxXE>
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: [linux/arm64, linux/amd64]
+        include:
+          - {platform: linux/amd64, tag-prefix: amd64}
+          - {platform: linux/arm64, tag-prefix: arm64}
     steps:
       - uses: actions/checkout@v3
+
+      - name: Login into ghcr.io
+        uses: gacts/run-and-post-run@v1
+        with:
+          run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin ghcr.io
+          post: podman logout ghcr.io
 
       - name: Setup QEMU
         if: ${{ matrix.platform != 'linux/amd64' }}
@@ -37,75 +45,53 @@ jobs: # Docs: <https://git.io/JvxXE>
 
       - {uses: gacts/github-slug@v1, id: slug}
 
-      - {uses: gacts/github-slug@v1, id: image-tag, with: {to-slug: '${{ matrix.platform }}-${{ steps.slug.outputs.version }}'}}
-
       - uses: actions/cache@v3
-        with: {path: /tmp/podman, key: 'podman-${{ runner.os }}-${{ steps.image-tag.outputs.slug }}'}
+        with:
+          path: /tmp/pd
+          key: 'podman-${{ runner.os }}-${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}'
+          restore-keys: 'podman-${{ runner.os }}-${{ matrix.tag-prefix }}-'
 
       - name: Build the image
-        run: |
-          podman --root /tmp/podman build \
-            --platform="${{ matrix.platform }}" \
-            --tag "localhost/curl:${{ steps.image-tag.outputs.slug }}" .
+        uses: gacts/run-and-post-run@v1
+        env:
+          IMAGE_NAME: 'ghcr.io/${{ github.actor }}/curl'
+          IMAGE_TAG: '${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}'
+        with:
+          run: podman --root /tmp/pd build --platform="${{ matrix.platform }}" --tag "$IMAGE_NAME:$IMAGE_TAG" .
+          post: podman push "$IMAGE_NAME:$IMAGE_TAG"
 
-      - name: Check the image
-        run: |
-          podman --root /tmp/podman run \
-            --rm --entrypoint '' "localhost/curl:${{ steps.image-tag.outputs.slug }}" \
-            sh && exit 1 || true
-          podman --root /tmp/podman run \
-            --rm "localhost/curl:${{ steps.image-tag.outputs.slug }}" \
-            --version
-
-      - name: Build with alpine base image
-        run: |
-          podman --root /tmp/podman build \
-            --platform="${{ matrix.platform }}" \
-            --build-arg "BASE_IMAGE=docker.io/library/alpine:latest" \
-            --tag "localhost/curl:${{ steps.image-tag.outputs.slug }}-alpine" .
-
-      - name: Check is alpine image
-        run: |
-          podman --root /tmp/podman run \
-            --rm --entrypoint '' "localhost/curl:${{ steps.image-tag.outputs.slug }}-alpine" \
-            sh -c 'cat /etc/os-release'
-          podman --root /tmp/podman run \
-            --rm "localhost/curl:${{ steps.image-tag.outputs.slug }}-alpine" \
-            --version
-
-      - name: Save the distroless image
-        run: podman --root /tmp/podman save "localhost/curl:${{ steps.image-tag.outputs.slug }}" > ./curl.tar
-
-      - uses: actions/upload-artifact@v3
-        with: {name: 'curl-${{ steps.image-tag.outputs.slug }}', path: ./curl.tar, retention-days: 1}
-
-      - name: Save the alpine image
-        run: podman --root /tmp/podman save "localhost/curl:${{ steps.image-tag.outputs.slug }}-alpine" > ./curl-alpine.tar
-
-      - uses: actions/upload-artifact@v3
-        with: {name: 'curl-alpine-${{ steps.image-tag.outputs.slug }}-alpine', path: ./curl-alpine.tar, retention-days: 1}
+      - name: Build alpine-based image
+        uses: gacts/run-and-post-run@v1
+        env:
+          IMAGE_NAME: 'ghcr.io/${{ github.actor }}/curl'
+          IMAGE_TAG: '${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}-alpine'
+        with:
+          run: podman --root /tmp/pd build
+            --platform="${{ matrix.platform }}"
+            --build-arg "BASE_IMAGE=docker.io/library/alpine:latest"
+            --tag "$IMAGE_NAME:$IMAGE_TAG"
+            .
+          post: podman push "$IMAGE_NAME:$IMAGE_TAG"
 
   create-manifest:
-    name: 🏗️ Create the distroless manifest
+    name: 🚶 Create the manifest
     runs-on: ubuntu-latest
     needs: [build-image]
     steps:
       - {uses: gacts/github-slug@v1, id: slug}
 
-      - uses: actions/download-artifact@v3
-        with: {name: 'curl-linux-amd64-${{ steps.slug.outputs.version }}'}
+      - name: Login into ghcr.io
+        uses: gacts/run-and-post-run@v1
+        with:
+          run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin ghcr.io
+          post: podman logout ghcr.io
 
-      - run: podman load < curl.tar
-
-      - uses: actions/download-artifact@v3
-        with: {name: 'curl-linux-arm64-${{ steps.slug.outputs.version }}'}
-
-      - run: podman load < curl.tar
-
-      - run: |
-          podman manifest create "ghcr.io/${{ github.actor }}/curl:${{ steps.slug.outputs.version }}" \
-            "localhost/curl:linux-amd64-${{ steps.slug.outputs.version }}" \
-            "localhost/curl:linux-arm64-${{ steps.slug.outputs.version }}"
+      - name: Create the manifest
+        env: {IMAGE_NAME: 'ghcr.io/${{ github.actor }}/curl'}
+        run: |
+          podman manifest create "$IMAGE_NAME:${{ steps.slug.outputs.version }}" \
+            "$IMAGE_NAME:amd64-${{ steps.slug.outputs.version }}" \
+            "$IMAGE_NAME:arm64-${{ steps.slug.outputs.version }}"
 
 #  scan-image:
 #    name: Scan docker image
@@ -153,3 +139,21 @@ jobs: # Docs: <https://git.io/JvxXE>
 #        run: |
 #          docker run --rm curl:local --fail "https://httpbin.org/status/401" || ec=$?
 #          test $ec -eq 1 && echo "all is ok (code = $ec)" || ( echo "Wrong exit code: $ec"; exit 1 )
+
+#      - name: Check the image
+#        run: |
+#          podman --root /tmp/pd run \
+#            --rm --entrypoint '' "localhost/curl:${{ steps.image-tag.outputs.slug }}" \
+#            sh && exit 1 || true
+#          podman --root /tmp/pd run \
+#            --rm "localhost/curl:${{ steps.image-tag.outputs.slug }}" \
+#            --version
+#
+#      - name: Check is alpine image
+#        run: |
+#          podman --root /tmp/pd run \
+#            --rm --entrypoint '' "localhost/curl:${{ steps.image-tag.outputs.slug }}-alpine" \
+#            sh -c 'cat /etc/os-release'
+#          podman --root /tmp/pd run \
+#            --rm "localhost/curl:${{ steps.image-tag.outputs.slug }}-alpine" \
+#            --version
