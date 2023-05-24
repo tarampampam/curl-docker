@@ -35,6 +35,9 @@ jobs: # Docs: <https://git.io/JvxXE>
         include:
           - {platform: linux/amd64, tag-prefix: amd64}
           - {platform: linux/arm64, tag-prefix: arm64}
+          - {platform: linux/arm/v6, tag-prefix: armv6}
+          - {platform: linux/arm/v7, tag-prefix: armv7}
+          - {platform: linux/386, tag-prefix: 386}
     steps:
       - uses: gacts/install-podman@v1
         with: {qemu: true}
@@ -97,6 +100,9 @@ jobs: # Docs: <https://git.io/JvxXE>
           run: podman manifest create "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
             "$GITHUB_IMAGE_NAME:amd64-${{ steps.slug.outputs.version }}"
             "$GITHUB_IMAGE_NAME:arm64-${{ steps.slug.outputs.version }}"
+            "$GITHUB_IMAGE_NAME:armv6-${{ steps.slug.outputs.version }}"
+            "$GITHUB_IMAGE_NAME:armv7-${{ steps.slug.outputs.version }}"
+            "$GITHUB_IMAGE_NAME:386-${{ steps.slug.outputs.version }}"
           post: podman manifest push --all "$GITHUB_IMAGE_NAME:$IMAGE_TAG" "docker://$GITHUB_IMAGE_NAME:$IMAGE_TAG"
 
 #  scan-image:
