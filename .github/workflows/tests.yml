@@ -33,7 +33,7 @@ jobs: # Docs: <https://git.io/JvxXE>
 
       - name: Setup QEMU
         if: ${{ matrix.platform != 'linux/amd64' }}
-        run: sudo podman run --rm --privileged multiarch/qemu-user-static --reset -p yes
+        run: sudo podman --root /tmp/podman run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
       - uses: actions/cache@v3
         with: {path: /tmp/podman, key: 'podman-${{ runner.os }}-${{ matrix.platform }}'}
@@ -83,7 +83,7 @@ jobs: # Docs: <https://git.io/JvxXE>
     needs: [build-image]
     steps:
       - uses: actions/download-artifact@v3
-        with: {name: curl-default-linux/arm64}
+        with: {name: curl-default-linux-arm64}
 
       - run: podman load < curl-default.tar
 
