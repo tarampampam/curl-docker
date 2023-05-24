@@ -31,7 +31,11 @@ jobs: # Docs: <https://git.io/JvxXE>
     steps:
       - uses: actions/checkout@v3
 
-      - if: ${{ matrix.platform != 'linux/amd64' }}
+      - name: Patch podman root directory
+        run: cat /etc/containers/storage.conf
+
+      - name: Setup QEMU
+        if: ${{ matrix.platform != 'linux/amd64' }}
         run: sudo podman run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
       - uses: actions/cache@v3
@@ -41,24 +45,24 @@ jobs: # Docs: <https://git.io/JvxXE>
         run: |
           podman --root /tmp/podman build \
             --platform="${{ matrix.platform }}" \
-            --tag localhost/curl:local .
+            --tag localhost/curl:default .
 
       - name: Check is distroless image
         run: |
-          podman --root /tmp/podman run --rm --entrypoint '' localhost/curl:local sh && exit 1 || true
-          podman --root /tmp/podman run --rm localhost/curl:local --version
+          podman --root /tmp/podman run --rm --entrypoint '' localhost/curl:default sh && exit 1 || true
+          podman --root /tmp/podman run --rm localhost/curl:default --version
 
       - name: Build with alpine base image
         run: |
           podman --root /tmp/podman build \
             --platform="${{ matrix.platform }}" \
             --build-arg "BASE_IMAGE=docker.io/library/alpine:latest" \
-            --tag localhost/curl:local-alpine .
+            --tag localhost/curl:alpine .
 
       - name: Check is alpine image
         run: |
-          podman --root /tmp/podman run --rm --entrypoint '' localhost/curl:local-alpine sh -c 'cat /etc/os-release'
-          podman --root /tmp/podman run --rm localhost/curl:local-alpine --version
+          podman --root /tmp/podman run --rm --entrypoint '' localhost/curl:alpine sh -c 'cat /etc/os-release'
+          podman --root /tmp/podman run --rm localhost/curl:alpine --version
 
 #      - run: docker build -f ./Dockerfile --build-arg "BASE_IMAGE=alpine:latest" --tag curl:local-alpine .
 #
