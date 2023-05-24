@@ -13,7 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CACHE_IMAGE_NAME: ghcr.io/${{ github.actor }}/curl/cache # GitHub registry
   GITHUB_IMAGE_NAME: ghcr.io/${{ github.actor }}/curl # GitHub registry
   DOCKERHUB_IMAGE_NAME: tarampampam/curl # DockerHub registry
 
@@ -57,12 +56,7 @@ jobs: # Docs: <https://git.io/JvxXE>
         env:
           IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }} # (arm|amd)64-<version>
         with:
-          run: podman build
-            --platform   "${{ matrix.platform }}"
-            --cache-from "$CACHE_IMAGE_NAME"
-            --cache-to   "$CACHE_IMAGE_NAME"
-            --tag        "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
-            .
+          run: podman build --platform "${{ matrix.platform }}" --tag "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
           post: podman push "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
 
       - name: Build alpine-based image
@@ -72,11 +66,8 @@ jobs: # Docs: <https://git.io/JvxXE>
         with:
           run: podman build
             --platform   "${{ matrix.platform }}"
-            --cache-from "$CACHE_IMAGE_NAME"
-            --cache-to   "$CACHE_IMAGE_NAME"
             --build-arg  "BASE_IMAGE=docker.io/library/alpine:latest"
-            --tag        "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
-            .
+            --tag        "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
           post: podman push "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
 
   create-manifest:
