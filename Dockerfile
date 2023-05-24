@@ -6,7 +6,7 @@
 # e.g.: `docker build --rm --build-arg "BASE_IMAGE=alpine:latest" -f ./Dockerfile .`
 ARG BASE_IMAGE="scratch"
 
-FROM alpine:3.17 as builder
+FROM docker.io/library/alpine:latest as builder
 
 # renovate: source=github-tags name=curl/curl versioning=regex:^(?:curl-)?(?<major>\d+)_(?<minor>\d+)_(?<patch>\d+)$ extractVersion=^(?:curl-)?(?<version>[\d_]+)$
 ENV CURL_VERSION="8_1_1"
