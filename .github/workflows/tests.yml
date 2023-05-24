@@ -12,6 +12,11 @@ concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  CACHE_IMAGE_NAME: ghcr.io/${{ github.actor }}/curl/cache # GitHub registry
+  GITHUB_IMAGE_NAME: ghcr.io/${{ github.actor }}/curl # GitHub registry
+  DOCKERHUB_IMAGE_NAME: tarampampam/curl # DockerHub registry
+
 jobs: # Docs: <https://git.io/JvxXE>
   gitleaks:
     name: 🔐 Check for GitLeaks
@@ -45,33 +50,31 @@ jobs: # Docs: <https://git.io/JvxXE>
 
       - {uses: gacts/github-slug@v1, id: slug}
 
-      - uses: actions/cache@v3
-        with:
-          path: /tmp/pd
-          key: podman-${{ runner.os }}-${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}
-          restore-keys: podman-${{ runner.os }}-${{ matrix.tag-prefix }}-
-
       - name: Build the image
         uses: gacts/run-and-post-run@v1
         env:
-          IMAGE_NAME: ghcr.io/${{ github.actor }}/curl
           IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}
         with:
-          run: podman --root /tmp/pd build --platform="${{ matrix.platform }}" --tag "$IMAGE_NAME:$IMAGE_TAG" .
-          post: podman --root /tmp/pd push "$IMAGE_NAME:$IMAGE_TAG"
+          run: podman build
+            --platform   "${{ matrix.platform }}"
+            --cache-from "$CACHE_IMAGE_NAME"
+            --cache-to   "$CACHE_IMAGE_NAME"
+            --tag        "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
+          post: podman push "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
 
       - name: Build alpine-based image
         uses: gacts/run-and-post-run@v1
         env:
-          IMAGE_NAME: ghcr.io/${{ github.actor }}/curl
           IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}-alpine
         with:
-          run: podman --root /tmp/pd build
-            --platform="${{ matrix.platform }}"
-            --build-arg "BASE_IMAGE=docker.io/library/alpine:latest"
-            --tag "$IMAGE_NAME:$IMAGE_TAG"
+          run: podman build
+            --platform   "${{ matrix.platform }}"
+            --cache-from "$CACHE_IMAGE_NAME"
+            --cache-to   "$CACHE_IMAGE_NAME"
+            --build-arg  "BASE_IMAGE=docker.io/library/alpine:latest"
+            --tag        "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
             .
-          post: podman --root /tmp/pd push "$IMAGE_NAME:$IMAGE_TAG"
+          post: podman push "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
 
   create-manifest:
     name: 🚶 Create the manifest
@@ -89,13 +92,12 @@ jobs: # Docs: <https://git.io/JvxXE>
       - name: Create the manifest
         uses: gacts/run-and-post-run@v1
         env:
-          IMAGE_NAME: ghcr.io/${{ github.actor }}/curl
           IMAGE_TAG: ${{ steps.slug.outputs.version }}
         with:
-          run: podman manifest create "$IMAGE_NAME:$IMAGE_TAG"
-            "$IMAGE_NAME:amd64-${{ steps.slug.outputs.version }}"
-            "$IMAGE_NAME:arm64-${{ steps.slug.outputs.version }}"
-          post: podman manifest push --all "$IMAGE_NAME:$IMAGE_TAG" "docker://$IMAGE_NAME:$IMAGE_TAG"
+          run: podman manifest create "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
+            "$GITHUB_IMAGE_NAME:amd64-${{ steps.slug.outputs.version }}"
+            "$GITHUB_IMAGE_NAME:arm64-${{ steps.slug.outputs.version }}"
+          post: podman manifest push --all "$GITHUB_IMAGE_NAME:$IMAGE_TAG" "docker://$GITHUB_IMAGE_NAME:$IMAGE_TAG"
 
 #  scan-image:
 #    name: Scan docker image
