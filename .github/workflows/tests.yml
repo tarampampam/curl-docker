@@ -50,22 +50,25 @@ jobs: # Docs: <https://git.io/JvxXE>
 
       - {uses: gacts/github-slug@v1, id: slug}
 
+      - run: podman version
+
       - name: Build the image
         uses: gacts/run-and-post-run@v1
         env:
-          IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}
+          IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }} # (arm|amd)64-<version>
         with:
           run: podman build
             --platform   "${{ matrix.platform }}"
             --cache-from "$CACHE_IMAGE_NAME"
             --cache-to   "$CACHE_IMAGE_NAME"
-            --tag        "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
+            --tag        "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
+            .
           post: podman push "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
 
       - name: Build alpine-based image
         uses: gacts/run-and-post-run@v1
         env:
-          IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}-alpine
+          IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}-alpine # (arm|amd)64-<version>-alpine
         with:
           run: podman build
             --platform   "${{ matrix.platform }}"
