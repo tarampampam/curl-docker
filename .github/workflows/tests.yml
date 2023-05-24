@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CACHE_IMAGE_NAME: ghcr.io/${{ github.actor }}/curl/cache # GitHub registry
-  GITHUB_IMAGE_NAME: ghcr.io/${{ github.actor }}/curl # GitHub registry
+  CACHE_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/curl/cache # GitHub registry
+  GITHUB_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/curl # GitHub registry
   DOCKER_IMAGE_NAME: tarampampam/curl # DockerHub registry
 
 jobs: # Docs: <https://git.io/JvxXE>
@@ -28,7 +28,7 @@ jobs: # Docs: <https://git.io/JvxXE>
       - uses: gacts/gitleaks@v1
 
   build-image:
-    name: 🏗️ Build the docker image (${{ matrix.platform }})
+    name: 🏗️ Build the image (${{ matrix.platform }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -38,6 +38,8 @@ jobs: # Docs: <https://git.io/JvxXE>
           - {platform: linux/arm/v6, tag-prefix: armv6}
           - {platform: linux/arm/v7, tag-prefix: armv7}
           - {platform: linux/386, tag-prefix: 386}
+          - {platform: linux/s390x, tag-prefix: s390x}
+          - {platform: linux/ppc64le, tag-prefix: ppc64le}
     steps:
       - uses: gacts/install-podman@v1
         with: {qemu: true}
@@ -103,6 +105,8 @@ jobs: # Docs: <https://git.io/JvxXE>
             "$GITHUB_IMAGE_NAME:armv6-${{ steps.slug.outputs.version }}"
             "$GITHUB_IMAGE_NAME:armv7-${{ steps.slug.outputs.version }}"
             "$GITHUB_IMAGE_NAME:386-${{ steps.slug.outputs.version }}"
+            "$GITHUB_IMAGE_NAME:s390x-${{ steps.slug.outputs.version }}"
+            "$GITHUB_IMAGE_NAME:ppc64le-${{ steps.slug.outputs.version }}"
           post: podman manifest push --all "$GITHUB_IMAGE_NAME:$IMAGE_TAG" "docker://$GITHUB_IMAGE_NAME:$IMAGE_TAG"
 
 #  scan-image:
