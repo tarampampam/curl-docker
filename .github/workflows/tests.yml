@@ -37,18 +37,30 @@ jobs: # Docs: <https://git.io/JvxXE>
       - uses: actions/cache@v3
         with: {path: /tmp/podman, key: 'podman-${{ runner.os }}-${{ matrix.platform }}'}
 
-      - run: |
+      - name: Build with default (distroless) base image
+        run: |
           podman build \
             --root /tmp/podman \
             --platform="${{ matrix.platform }}" \
             --tag curl:local .
 
-      - run: |
+      - name: Check is distroless image
+        run: |
+          podman run --rm --entrypoint '' curl:local sh && exit 1 || true
+          podman run --rm curl:local --version
+
+      - name: Build with alpine base image
+        run: |
           podman build \
             --root /tmp/podman \
             --platform="${{ matrix.platform }}" \
             --build-arg "BASE_IMAGE=docker.io/library/alpine:latest" \
             --tag curl:local-alpine .
+
+      - name: Check is alpine image
+        run: |
+          podman run --rm --entrypoint '' curl:local-alpine sh -c 'cat /etc/os-release'
+          podman run --rm curl:local-alpine --version
 
 #      - run: docker build -f ./Dockerfile --build-arg "BASE_IMAGE=alpine:latest" --tag curl:local-alpine .
 #
