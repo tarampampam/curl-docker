@@ -61,17 +61,21 @@ jobs: # Docs: <https://git.io/JvxXE>
           podman --root /tmp/podman run --rm --entrypoint '' localhost/curl:alpine sh -c 'cat /etc/os-release'
           podman --root /tmp/podman run --rm localhost/curl:alpine --version
 
+      - uses: gacts/github-slug@v1
+        id: platform-slug
+        with: {to-slug: '${{ matrix.platform }}'}
+
       - name: Save distroless image
         run: podman --root /tmp/podman save localhost/curl:default > ./curl-default.tar
 
       - uses: actions/upload-artifact@v3
-        with: {name: 'curl-default-${{ matrix.platform }}', path: ./curl-default.tar, retention-days: 1}
+        with: {name: 'curl-default-${{ steps.platform-slug.outputs.slug }}', path: ./curl-default.tar, retention-days: 1}
 
       - name: Save alpine image
         run: podman --root /tmp/podman save localhost/curl:alpine > ./curl-alpine.tar
 
       - uses: actions/upload-artifact@v3
-        with: {name: 'curl-alpine-${{ matrix.platform }}', path: ./curl-alpine.tar, retention-days: 1}
+        with: {name: 'curl-alpine-${{ steps.platform-slug.outputs.slug }}', path: ./curl-alpine.tar, retention-days: 1}
 
   create-manifest:
     name: 🏗️ Create the distroless image manifest
