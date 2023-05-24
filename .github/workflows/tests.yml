@@ -49,8 +49,6 @@ jobs: # Docs: <https://git.io/JvxXE>
 
       - {uses: gacts/github-slug@v1, id: slug}
 
-      - run: sudo apt update && sudo apt install podman -y
-
       - name: Build the image
         uses: gacts/run-and-post-run@v1
         env:
@@ -65,9 +63,9 @@ jobs: # Docs: <https://git.io/JvxXE>
           IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}-alpine # (arm|amd)64-<version>-alpine
         with:
           run: podman build
-            --platform   "${{ matrix.platform }}"
-            --build-arg  "BASE_IMAGE=docker.io/library/alpine:latest"
-            --tag        "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
+            --platform  "${{ matrix.platform }}"
+            --build-arg "BASE_IMAGE=docker.io/library/alpine:latest"
+            --tag       "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
           post: podman push "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
 
   create-manifest:
