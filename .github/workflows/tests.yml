@@ -28,7 +28,7 @@ jobs: # Docs: <https://git.io/JvxXE>
       - uses: gacts/gitleaks@v1
 
   build-image:
-    name: 🏗️ Build the docker image
+    name: 🏗️ Build the docker image (${{ matrix.platform }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
