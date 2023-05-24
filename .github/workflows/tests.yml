@@ -32,7 +32,7 @@ jobs: # Docs: <https://git.io/JvxXE>
       - uses: actions/checkout@v3
 
       - name: Patch podman root directory
-        run: cat /etc/containers/storage.conf
+        run: find / type f -name storage.conf
 
       - name: Setup QEMU
         if: ${{ matrix.platform != 'linux/amd64' }}
