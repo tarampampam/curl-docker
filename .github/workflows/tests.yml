@@ -78,12 +78,17 @@ jobs: # Docs: <https://git.io/JvxXE>
         with: {name: 'curl-alpine-${{ steps.platform-slug.outputs.slug }}', path: ./curl-alpine.tar, retention-days: 1}
 
   create-manifest:
-    name: 🏗️ Create the distroless image manifest
+    name: 🏗️ Create the distroless manifest
     runs-on: ubuntu-latest
     needs: [build-image]
     steps:
       - uses: actions/download-artifact@v3
         with: {name: curl-default-linux-arm64}
+
+      - run: podman load < curl-default.tar
+
+      - uses: actions/download-artifact@v3
+        with: {name: curl-default-linux-amd64}
 
       - run: podman load < curl-default.tar
 
