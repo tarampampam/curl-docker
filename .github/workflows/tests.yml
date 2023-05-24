@@ -13,8 +13,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  CACHE_IMAGE_NAME: ghcr.io/${{ github.actor }}/curl/cache # GitHub registry
   GITHUB_IMAGE_NAME: ghcr.io/${{ github.actor }}/curl # GitHub registry
-  DOCKERHUB_IMAGE_NAME: tarampampam/curl # DockerHub registry
+  DOCKER_IMAGE_NAME: tarampampam/curl # DockerHub registry
 
 jobs: # Docs: <https://git.io/JvxXE>
   gitleaks:
@@ -35,7 +36,8 @@ jobs: # Docs: <https://git.io/JvxXE>
           - {platform: linux/amd64, tag-prefix: amd64}
           - {platform: linux/arm64, tag-prefix: arm64}
     steps:
-      - uses: actions/checkout@v3
+      - uses: gacts/install-podman@v1
+        with: {qemu: true}
 
       - name: Login into ghcr.io
         uses: gacts/run-and-post-run@v1
@@ -43,18 +45,20 @@ jobs: # Docs: <https://git.io/JvxXE>
           run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin ghcr.io
           post: podman logout ghcr.io
 
-      - name: Setup QEMU
-        if: ${{ matrix.platform != 'linux/amd64' }}
-        run: sudo podman run --rm --privileged multiarch/qemu-user-static --reset -p yes
-
       - {uses: gacts/github-slug@v1, id: slug}
+
+      - uses: actions/checkout@v3
 
       - name: Build the image
         uses: gacts/run-and-post-run@v1
         env:
           IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }} # (arm|amd)64-<version>
         with:
-          run: podman build --platform "${{ matrix.platform }}" --tag "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
+          run: podman build
+            --platform   "${{ matrix.platform }}"
+            --cache-from "$CACHE_IMAGE_NAME"
+            --cache-to   "$CACHE_IMAGE_NAME"
+            --tag        "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
           post: podman push "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
 
       - name: Build alpine-based image
@@ -63,23 +67,27 @@ jobs: # Docs: <https://git.io/JvxXE>
           IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}-alpine # (arm|amd)64-<version>-alpine
         with:
           run: podman build
-            --platform  "${{ matrix.platform }}"
-            --build-arg "BASE_IMAGE=docker.io/library/alpine:latest"
-            --tag       "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
+            --platform   "${{ matrix.platform }}"
+            --cache-from "$CACHE_IMAGE_NAME"
+            --cache-to   "$CACHE_IMAGE_NAME"
+            --build-arg  "BASE_IMAGE=docker.io/library/alpine:latest"
+            --tag        "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
           post: podman push "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
 
   create-manifest:
-    name: 🚶 Create the manifest
+    name: ✍ Create the manifest
     runs-on: ubuntu-latest
     needs: [build-image]
     steps:
-      - {uses: gacts/github-slug@v1, id: slug}
+      - uses: gacts/install-podman@v1
 
       - name: Login into ghcr.io
         uses: gacts/run-and-post-run@v1
         with:
           run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin ghcr.io
           post: podman logout ghcr.io
+
+      - {uses: gacts/github-slug@v1, id: slug}
 
       - name: Create the manifest
         uses: gacts/run-and-post-run@v1
