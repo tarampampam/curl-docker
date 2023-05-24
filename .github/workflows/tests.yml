@@ -48,14 +48,14 @@ jobs: # Docs: <https://git.io/JvxXE>
       - uses: actions/cache@v3
         with:
           path: /tmp/pd
-          key: 'podman-${{ runner.os }}-${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}'
-          restore-keys: 'podman-${{ runner.os }}-${{ matrix.tag-prefix }}-'
+          key: podman-${{ runner.os }}-${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}
+          restore-keys: podman-${{ runner.os }}-${{ matrix.tag-prefix }}-
 
       - name: Build the image
         uses: gacts/run-and-post-run@v1
         env:
-          IMAGE_NAME: 'ghcr.io/${{ github.actor }}/curl'
-          IMAGE_TAG: '${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}'
+          IMAGE_NAME: ghcr.io/${{ github.actor }}/curl
+          IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}
         with:
           run: podman --root /tmp/pd build --platform="${{ matrix.platform }}" --tag "$IMAGE_NAME:$IMAGE_TAG" .
           post: podman --root /tmp/pd push "$IMAGE_NAME:$IMAGE_TAG"
@@ -63,8 +63,8 @@ jobs: # Docs: <https://git.io/JvxXE>
       - name: Build alpine-based image
         uses: gacts/run-and-post-run@v1
         env:
-          IMAGE_NAME: 'ghcr.io/${{ github.actor }}/curl'
-          IMAGE_TAG: '${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}-alpine'
+          IMAGE_NAME: ghcr.io/${{ github.actor }}/curl
+          IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}-alpine
         with:
           run: podman --root /tmp/pd build
             --platform="${{ matrix.platform }}"
@@ -87,11 +87,15 @@ jobs: # Docs: <https://git.io/JvxXE>
           post: podman logout ghcr.io
 
       - name: Create the manifest
-        env: {IMAGE_NAME: 'ghcr.io/${{ github.actor }}/curl'}
-        run: |
-          podman manifest create "$IMAGE_NAME:${{ steps.slug.outputs.version }}" \
-            "$IMAGE_NAME:amd64-${{ steps.slug.outputs.version }}" \
+        uses: gacts/run-and-post-run@v1
+        env:
+          IMAGE_NAME: ghcr.io/${{ github.actor }}/curl
+          IMAGE_TAG: ${{ steps.slug.outputs.version }}
+        with:
+          run: podman manifest create "$IMAGE_NAME:$IMAGE_TAG"
+            "$IMAGE_NAME:amd64-${{ steps.slug.outputs.version }}"
             "$IMAGE_NAME:arm64-${{ steps.slug.outputs.version }}"
+          post: podman manifest push --all "$IMAGE_NAME:$IMAGE_TAG" "docker://$IMAGE_NAME:$IMAGE_TAG"
 
 #  scan-image:
 #    name: Scan docker image
