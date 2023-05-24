@@ -58,7 +58,7 @@ jobs: # Docs: <https://git.io/JvxXE>
           IMAGE_TAG: '${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}'
         with:
           run: podman --root /tmp/pd build --platform="${{ matrix.platform }}" --tag "$IMAGE_NAME:$IMAGE_TAG" .
-          post: podman push "$IMAGE_NAME:$IMAGE_TAG"
+          post: podman --root /tmp/pd push "$IMAGE_NAME:$IMAGE_TAG"
 
       - name: Build alpine-based image
         uses: gacts/run-and-post-run@v1
@@ -71,7 +71,7 @@ jobs: # Docs: <https://git.io/JvxXE>
             --build-arg "BASE_IMAGE=docker.io/library/alpine:latest"
             --tag "$IMAGE_NAME:$IMAGE_TAG"
             .
-          post: podman push "$IMAGE_NAME:$IMAGE_TAG"
+          post: podman --root /tmp/pd push "$IMAGE_NAME:$IMAGE_TAG"
 
   create-manifest:
     name: 🚶 Create the manifest
