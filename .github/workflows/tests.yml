@@ -42,12 +42,12 @@ jobs: # Docs: <https://git.io/JvxXE>
           podman build \
             --root /tmp/podman \
             --platform="${{ matrix.platform }}" \
-            --tag curl:local .
+            --tag localhost/curl:local .
 
       - name: Check is distroless image
         run: |
-          podman run --rm --entrypoint '' curl:local sh && exit 1 || true
-          podman run --rm curl:local --version
+          podman run --rm --entrypoint '' localhost/curl:local sh && exit 1 || true
+          podman run --rm localhost/curl:local --version
 
       - name: Build with alpine base image
         run: |
@@ -55,12 +55,12 @@ jobs: # Docs: <https://git.io/JvxXE>
             --root /tmp/podman \
             --platform="${{ matrix.platform }}" \
             --build-arg "BASE_IMAGE=docker.io/library/alpine:latest" \
-            --tag curl:local-alpine .
+            --tag localhost/curl:local-alpine .
 
       - name: Check is alpine image
         run: |
-          podman run --rm --entrypoint '' curl:local-alpine sh -c 'cat /etc/os-release'
-          podman run --rm curl:local-alpine --version
+          podman run --rm --entrypoint '' localhost/curl:local-alpine sh -c 'cat /etc/os-release'
+          podman run --rm localhost/curl:local-alpine --version
 
 #      - run: docker build -f ./Dockerfile --build-arg "BASE_IMAGE=alpine:latest" --tag curl:local-alpine .
 #
