@@ -35,62 +35,77 @@ jobs: # Docs: <https://git.io/JvxXE>
         if: ${{ matrix.platform != 'linux/amd64' }}
         run: sudo podman run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
-      - uses: actions/cache@v3
-        with: {path: /tmp/podman, key: 'podman-${{ runner.os }}-${{ matrix.platform }}'}
+      - {uses: gacts/github-slug@v1, id: slug}
 
-      - name: Build with default (distroless) base image
+      - {uses: gacts/github-slug@v1, id: image-tag, with: {to-slug: '${{ matrix.platform }}-${{ steps.slug.outputs.version }}'}}
+
+      - uses: actions/cache@v3
+        with: {path: /tmp/podman, key: 'podman-${{ runner.os }}-${{ steps.image-tag.outputs.slug }}'}
+
+      - name: Build the image
         run: |
           podman --root /tmp/podman build \
             --platform="${{ matrix.platform }}" \
-            --tag localhost/curl:default .
+            --tag "localhost/curl:${{ steps.image-tag.outputs.slug }}" .
 
-      - name: Check is distroless image
+      - name: Check the image
         run: |
-          podman --root /tmp/podman run --rm --entrypoint '' localhost/curl:default sh && exit 1 || true
-          podman --root /tmp/podman run --rm localhost/curl:default --version
+          podman --root /tmp/podman run \
+            --rm --entrypoint '' "localhost/curl:${{ steps.image-tag.outputs.slug }}" \
+            sh && exit 1 || true
+          podman --root /tmp/podman run \
+            --rm "localhost/curl:${{ steps.image-tag.outputs.slug }}" \
+            --version
 
       - name: Build with alpine base image
         run: |
           podman --root /tmp/podman build \
             --platform="${{ matrix.platform }}" \
             --build-arg "BASE_IMAGE=docker.io/library/alpine:latest" \
-            --tag localhost/curl:alpine .
+            --tag "localhost/curl:${{ steps.image-tag.outputs.slug }}-alpine" .
 
       - name: Check is alpine image
         run: |
-          podman --root /tmp/podman run --rm --entrypoint '' localhost/curl:alpine sh -c 'cat /etc/os-release'
-          podman --root /tmp/podman run --rm localhost/curl:alpine --version
+          podman --root /tmp/podman run \
+            --rm --entrypoint '' "localhost/curl:${{ steps.image-tag.outputs.slug }}-alpine" \
+            sh -c 'cat /etc/os-release'
+          podman --root /tmp/podman run \
+            --rm "localhost/curl:${{ steps.image-tag.outputs.slug }}-alpine" \
+            --version
 
-      - uses: gacts/github-slug@v1
-        id: platform-slug
-        with: {to-slug: '${{ matrix.platform }}'}
-
-      - name: Save distroless image
-        run: podman --root /tmp/podman save localhost/curl:default > ./curl-default.tar
-
-      - uses: actions/upload-artifact@v3
-        with: {name: 'curl-default-${{ steps.platform-slug.outputs.slug }}', path: ./curl-default.tar, retention-days: 1}
-
-      - name: Save alpine image
-        run: podman --root /tmp/podman save localhost/curl:alpine > ./curl-alpine.tar
+      - name: Save the distroless image
+        run: podman --root /tmp/podman save "localhost/curl:${{ steps.image-tag.outputs.slug }}" > ./curl.tar
 
       - uses: actions/upload-artifact@v3
-        with: {name: 'curl-alpine-${{ steps.platform-slug.outputs.slug }}', path: ./curl-alpine.tar, retention-days: 1}
+        with: {name: 'curl-${{ steps.image-tag.outputs.slug }}', path: ./curl.tar, retention-days: 1}
+
+      - name: Save the alpine image
+        run: podman --root /tmp/podman save "localhost/curl:${{ steps.image-tag.outputs.slug }}-alpine" > ./curl-alpine.tar
+
+      - uses: actions/upload-artifact@v3
+        with: {name: 'curl-alpine-${{ steps.image-tag.outputs.slug }}-alpine', path: ./curl-alpine.tar, retention-days: 1}
 
   create-manifest:
     name: 🏗️ Create the distroless manifest
     runs-on: ubuntu-latest
     needs: [build-image]
     steps:
-      - uses: actions/download-artifact@v3
-        with: {name: curl-default-linux-arm64}
-
-      - run: podman load < curl-default.tar
+      - {uses: gacts/github-slug@v1, id: slug}
 
       - uses: actions/download-artifact@v3
-        with: {name: curl-default-linux-amd64}
+        with: {name: 'curl-linux-amd64-${{ steps.slug.outputs.version }}'}
 
-      - run: podman load < curl-default.tar
+      - run: podman load < curl.tar
+
+      - uses: actions/download-artifact@v3
+        with: {name: 'curl-linux-arm64-${{ steps.slug.outputs.version }}'}
+
+      - run: podman load < curl.tar
+
+      - run: |
+          podman manifest create "ghcr.io/${{ github.actor }}/curl:${{ steps.slug.outputs.version }}" \
+            "localhost/curl:linux-amd64-${{ steps.slug.outputs.version }}" \
+            "localhost/curl:linux-arm64-${{ steps.slug.outputs.version }}"
 
 #  scan-image:
 #    name: Scan docker image
