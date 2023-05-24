@@ -20,7 +20,7 @@ jobs: # Docs: <https://git.io/JvxXE>
       - uses: actions/checkout@v3
         with: {fetch-depth: 0}
 
-      - uses: gacts/gitleaks@v1 # Action page: <https://github.com/gacts/gitleaks>
+      - uses: gacts/gitleaks@v1
 
   build-image:
     name: 🏗️ Build the docker image
@@ -35,11 +35,20 @@ jobs: # Docs: <https://git.io/JvxXE>
         run: sudo podman run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
       - uses: actions/cache@v3
-        with:
-          path: /tmp/podman
-          key: podman-${{ runner.os }}-${{ matrix.platform }}
+        with: {path: /tmp/podman, key: 'podman-${{ runner.os }}-${{ matrix.platform }}'}
 
-      - run: podman build --root /tmp/podman --platform="${{ matrix.platform }}" --tag curl:local .
+      - run: |
+          podman build \
+            --root /tmp/podman \
+            --platform="${{ matrix.platform }}" \
+            --tag curl:local .
+
+      - run: |
+          podman build \
+            --root /tmp/podman \
+            --platform="${{ matrix.platform }}" \
+            --build-arg "BASE_IMAGE=docker.io/library/alpine:latest" \
+            --tag curl:local-alpine .
 
 #      - run: docker build -f ./Dockerfile --build-arg "BASE_IMAGE=alpine:latest" --tag curl:local-alpine .
 #
