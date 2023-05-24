@@ -50,7 +50,9 @@ jobs: # Docs: <https://git.io/JvxXE>
 
       - {uses: gacts/github-slug@v1, id: slug}
 
-      - run: podman version
+      - run: |
+          podman version
+          podman build --help
 
       - name: Build the image
         uses: gacts/run-and-post-run@v1
