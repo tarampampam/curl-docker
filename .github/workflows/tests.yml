@@ -40,9 +40,9 @@ jobs:
           - {platform: linux/s390x, name: s390x}
           - {platform: linux/ppc64le, name: ppc64le}
     env:
-      IMAGE_NAME: $GITHUB_IMAGE_NAME
-      IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ github.sha }}
-      IMAGE_TAG_ALPINE: ${{ matrix.tag-prefix }}-${{ github.sha }}-alpine
+      IMAGE_NAME: ${{ env.GITHUB_IMAGE_NAME }}
+      IMAGE_TAG: ${{ github.sha }}
+      IMAGE_TAG_ALPINE: ${{ github.sha }}-alpine
     steps:
 #      - uses: gacts/install-podman@v1
 #        with: {qemu: true}
