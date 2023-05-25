@@ -73,7 +73,7 @@ jobs:
       - {uses: actions/download-artifact@v3, id: download, with: {path: images}}
 
       - name: Load the images
-        run: for d in "${{ steps.download.outputs.download-path }}/*/"; do podman load < "$d/image.tar"; done
+        run: for d in ${{ steps.download.outputs.download-path }}/*/; do podman load < "$d/image.tar"; done
 
 #      - uses: gacts/install-podman@v1
 #
