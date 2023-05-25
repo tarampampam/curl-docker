@@ -40,7 +40,6 @@ jobs:
           - {platform: linux/s390x, name: s390x}
           - {platform: linux/ppc64le, name: ppc64le}
     env:
-      IMAGE_NAME: ${{ env.GITHUB_IMAGE_NAME }}
       IMAGE_TAG: ${{ github.sha }}
       IMAGE_TAG_ALPINE: ${{ github.sha }}-alpine
     steps:
@@ -58,16 +57,16 @@ jobs:
       - uses: actions/checkout@v3
 
       - run: |
-          podman build --platform "${{ matrix.platform }}" --tag "$IMAGE_NAME:$IMAGE_TAG" .
-          podman save "$IMAGE_NAME:$IMAGE_TAG" > ./image.tar
+          podman build --platform "${{ matrix.platform }}" --tag "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
+          podman save "$GITHUB_IMAGE_NAME:$IMAGE_TAG" > ./image.tar
 
       - uses: actions/upload-artifact@v3
         with: {name: 'image-${{ matrix.name }}', path: ./image.tar, retention-days: 1}
 
       - run: |
-          podman build --platform "${{ matrix.platform }}" --tag "$IMAGE_NAME:$IMAGE_TAG_ALPINE" \
+          podman build --platform "${{ matrix.platform }}" --tag "$GITHUB_IMAGE_NAME:$IMAGE_TAG_ALPINE" \
             --build-arg "BASE_IMAGE=docker.io/library/alpine:latest" .
-          podman save "$IMAGE_NAME:$IMAGE_TAG_ALPINE" > ./image-alpine.tar
+          podman save "$GITHUB_IMAGE_NAME:$IMAGE_TAG_ALPINE" > ./image-alpine.tar
 
       - uses: actions/upload-artifact@v3
         with: {name: 'image-${{ matrix.name }}-alpine', path: ./image.tar, retention-days: 1}
