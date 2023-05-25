@@ -48,7 +48,7 @@ jobs:
       - if: ${{ matrix.platform != 'linux/amd64' }}
         run: sudo podman run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
-      - name: Build scratch image
+      - name: Build the scratch image
         run: |
           podman build --platform "${{ matrix.platform }}" --tag "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
           podman save "$GITHUB_IMAGE_NAME:$IMAGE_TAG" > ./image.tar
@@ -56,11 +56,11 @@ jobs:
       - uses: actions/upload-artifact@v3
         with: {name: 'image-${{ matrix.name }}', path: ./image.tar, retention-days: 1}
 
-      - name: Build alpine image
+      - name: Build the alpine image
         run: |
           podman build --platform "${{ matrix.platform }}" --tag "$GITHUB_IMAGE_NAME:$IMAGE_TAG_ALPINE" \
             --build-arg "BASE_IMAGE=docker.io/library/alpine:latest" .
-          podman save "$GITHUB_IMAGE_NAME:$IMAGE_TAG_ALPINE" > ./image-alpine.tar
+          podman save "$GITHUB_IMAGE_NAME:$IMAGE_TAG_ALPINE" > ./image.tar
 
       - uses: actions/upload-artifact@v3
         with: {name: 'image-${{ matrix.name }}-alpine', path: ./image.tar, retention-days: 1}
@@ -70,10 +70,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-image]
     steps:
-      - uses: actions/download-artifact@v3
-        with: {path: images}
+      - {uses: actions/download-artifact@v3, id: download, with: {path: images}}
 
-      - run: ls -l ./images
+      - name: Load the images
+        run: for d in "${{ steps.download.outputs.download-path }}"/; do podman load < "$d/image.tar"; done
+
 #      - uses: gacts/install-podman@v1
 #
 #      - name: Login into ghcr.io
