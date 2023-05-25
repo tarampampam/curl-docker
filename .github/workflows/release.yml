@@ -7,7 +7,7 @@ on:
 jobs:
   docker-image:
     name: Build docker image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
@@ -47,7 +47,7 @@ jobs:
           file: Dockerfile
           push: true
           platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v6,linux/arm/v7
-          build-args: "BASE_IMAGE=alpine:latest"
+          build-args: "BASE_IMAGE=docker.io/library/alpine:latest"
           tags: |
             tarampampam/curl:${{ steps.slug.outputs.version }}-alpine
             tarampampam/curl:latest-alpine
