@@ -15,6 +15,8 @@ concurrency:
 env:
   GITHUB_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/curl # GitHub registry
   DOCKER_IMAGE_NAME: tarampampam/curl # DockerHub registry
+  IMAGE_TAG: ${{ github.sha }}
+  IMAGE_TAG_ALPINE: ${{ github.sha }}-alpine
 
 jobs:
   gitleaks:
@@ -36,12 +38,9 @@ jobs:
 #          - {platform: linux/arm64, name: arm64}
 #          - {platform: linux/arm/v6, name: armv6}
 #          - {platform: linux/arm/v7, name: armv7}
-#          - {platform: linux/386, name: 386}
+          - {platform: linux/386, name: 386}
 #          - {platform: linux/s390x, name: s390x}
 #          - {platform: linux/ppc64le, name: ppc64le}
-    env: &images-env
-      IMAGE_TAG: ${{ github.sha }}
-      IMAGE_TAG_ALPINE: ${{ github.sha }}-alpine
     steps:
       - uses: actions/checkout@v3
 
@@ -69,7 +68,6 @@ jobs:
     name: ✍ Create the manifest
     runs-on: ubuntu-latest
     needs: [build-image]
-    env: *images-env
     steps:
       - {uses: actions/download-artifact@v3, id: download, with: {path: images}}
 
