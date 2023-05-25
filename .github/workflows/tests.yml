@@ -39,7 +39,7 @@ jobs:
 #          - {platform: linux/386, name: 386}
 #          - {platform: linux/s390x, name: s390x}
 #          - {platform: linux/ppc64le, name: ppc64le}
-    env:
+    env: &images-env
       IMAGE_TAG: ${{ github.sha }}
       IMAGE_TAG_ALPINE: ${{ github.sha }}-alpine
     steps:
@@ -69,11 +69,14 @@ jobs:
     name: ✍ Create the manifest
     runs-on: ubuntu-latest
     needs: [build-image]
+    env: *images-env
     steps:
       - {uses: actions/download-artifact@v3, id: download, with: {path: images}}
 
       - name: Load the images
         run: for d in ${{ steps.download.outputs.download-path }}/*/; do podman load < "$d/image.tar"; done
+
+      - run: podman image ls
 
 #      - uses: gacts/install-podman@v1
 #
