@@ -33,40 +33,31 @@ jobs:
       matrix:
         include:
           - {platform: linux/amd64, name: amd64}
-          - {platform: linux/arm64, name: arm64}
-          - {platform: linux/arm/v6, name: armv6}
-          - {platform: linux/arm/v7, name: armv7}
-          - {platform: linux/386, name: 386}
-          - {platform: linux/s390x, name: s390x}
-          - {platform: linux/ppc64le, name: ppc64le}
+#          - {platform: linux/arm64, name: arm64}
+#          - {platform: linux/arm/v6, name: armv6}
+#          - {platform: linux/arm/v7, name: armv7}
+#          - {platform: linux/386, name: 386}
+#          - {platform: linux/s390x, name: s390x}
+#          - {platform: linux/ppc64le, name: ppc64le}
     env:
       IMAGE_TAG: ${{ github.sha }}
       IMAGE_TAG_ALPINE: ${{ github.sha }}-alpine
     steps:
-#      - uses: gacts/install-podman@v1
-#        with: {qemu: true}
-
-#      - name: Login into ghcr.io
-#        uses: gacts/run-and-post-run@v1
-#        with:
-#          run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin ghcr.io
-#          post: podman logout ghcr.io
-
-#      - {uses: gacts/github-slug@v1, id: slug}
-
       - uses: actions/checkout@v3
 
       - if: ${{ matrix.platform != 'linux/amd64' }}
         run: sudo podman run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
-      - run: |
+      - name: Build scratch image
+        run: |
           podman build --platform "${{ matrix.platform }}" --tag "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
           podman save "$GITHUB_IMAGE_NAME:$IMAGE_TAG" > ./image.tar
 
       - uses: actions/upload-artifact@v3
         with: {name: 'image-${{ matrix.name }}', path: ./image.tar, retention-days: 1}
 
-      - run: |
+      - name: Build alpine image
+        run: |
           podman build --platform "${{ matrix.platform }}" --tag "$GITHUB_IMAGE_NAME:$IMAGE_TAG_ALPINE" \
             --build-arg "BASE_IMAGE=docker.io/library/alpine:latest" .
           podman save "$GITHUB_IMAGE_NAME:$IMAGE_TAG_ALPINE" > ./image-alpine.tar
@@ -74,11 +65,15 @@ jobs:
       - uses: actions/upload-artifact@v3
         with: {name: 'image-${{ matrix.name }}-alpine', path: ./image.tar, retention-days: 1}
 
-#  create-manifest:
-#    name: ✍ Create the manifest
-#    runs-on: ubuntu-latest
-#    needs: [build-image]
-#    steps:
+  create-manifest:
+    name: ✍ Create the manifest
+    runs-on: ubuntu-latest
+    needs: [build-image]
+    steps:
+      - uses: actions/download-artifact@v3
+        with: {path: images}
+
+      - run: ls -l ./images
 #      - uses: gacts/install-podman@v1
 #
 #      - name: Login into ghcr.io
@@ -150,6 +145,18 @@ jobs:
 #        run: |
 #          docker run --rm curl:local --fail "https://httpbin.org/status/401" || ec=$?
 #          test $ec -eq 1 && echo "all is ok (code = $ec)" || ( echo "Wrong exit code: $ec"; exit 1 )
+
+#      - uses: gacts/install-podman@v1
+#        with: {qemu: true}
+
+#      - name: Login into ghcr.io
+#        uses: gacts/run-and-post-run@v1
+#        with:
+#          run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin ghcr.io
+#          post: podman logout ghcr.io
+
+#      - {uses: gacts/github-slug@v1, id: slug}
+
 
 #      - name: Check the image
 #        run: |
