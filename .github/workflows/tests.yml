@@ -13,7 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CACHE_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/curl/cache # GitHub registry
   GITHUB_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/curl # GitHub registry
   DOCKER_IMAGE_NAME: tarampampam/curl # DockerHub registry
 
@@ -33,81 +32,75 @@ jobs:
     strategy:
       matrix:
         include:
-          - {platform: linux/amd64, tag-prefix: amd64}
-          - {platform: linux/arm64, tag-prefix: arm64}
-          - {platform: linux/arm/v6, tag-prefix: armv6}
-          - {platform: linux/arm/v7, tag-prefix: armv7}
-          - {platform: linux/386, tag-prefix: 386}
-          - {platform: linux/s390x, tag-prefix: s390x}
-          - {platform: linux/ppc64le, tag-prefix: ppc64le}
+          - {platform: linux/amd64, name: amd64}
+          - {platform: linux/arm64, name: arm64}
+          - {platform: linux/arm/v6, name: armv6}
+          - {platform: linux/arm/v7, name: armv7}
+          - {platform: linux/386, name: 386}
+          - {platform: linux/s390x, name: s390x}
+          - {platform: linux/ppc64le, name: ppc64le}
+    env:
+      IMAGE_NAME: $GITHUB_IMAGE_NAME
+      IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ github.sha }}
+      IMAGE_TAG_ALPINE: ${{ matrix.tag-prefix }}-${{ github.sha }}-alpine
     steps:
-      - uses: gacts/install-podman@v1
-        with: {qemu: true}
+#      - uses: gacts/install-podman@v1
+#        with: {qemu: true}
 
-      - name: Login into ghcr.io
-        uses: gacts/run-and-post-run@v1
-        with:
-          run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin ghcr.io
-          post: podman logout ghcr.io
+#      - name: Login into ghcr.io
+#        uses: gacts/run-and-post-run@v1
+#        with:
+#          run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin ghcr.io
+#          post: podman logout ghcr.io
 
-      - {uses: gacts/github-slug@v1, id: slug}
+#      - {uses: gacts/github-slug@v1, id: slug}
 
       - uses: actions/checkout@v3
 
-      - name: Build the image
-        uses: gacts/run-and-post-run@v1
-        env:
-          IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }} # (arm|amd)64-<version>
-        with:
-          run: podman build
-            --platform   "${{ matrix.platform }}"
-            --cache-from "$CACHE_IMAGE_NAME"
-            --cache-to   "$CACHE_IMAGE_NAME"
-            --tag        "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
-          post: podman push "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
+      - run: |
+          podman build --platform "${{ matrix.platform }}" --tag "$IMAGE_NAME:$IMAGE_TAG" .
+          podman save "$IMAGE_NAME:$IMAGE_TAG" > ./image.tar
 
-      - name: Build alpine-based image
-        uses: gacts/run-and-post-run@v1
-        env:
-          IMAGE_TAG: ${{ matrix.tag-prefix }}-${{ steps.slug.outputs.version }}-alpine # (arm|amd)64-<version>-alpine
-        with:
-          run: podman build
-            --platform   "${{ matrix.platform }}"
-            --cache-from "$CACHE_IMAGE_NAME"
-            --cache-to   "$CACHE_IMAGE_NAME"
-            --build-arg  "BASE_IMAGE=docker.io/library/alpine:latest"
-            --tag        "$GITHUB_IMAGE_NAME:$IMAGE_TAG" .
-          post: podman push "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
+      - uses: actions/upload-artifact@v3
+        with: {name: image-${{ matrix.name }}, path: ./image.tar, retention-days: 1}
 
-  create-manifest:
-    name: ✍ Create the manifest
-    runs-on: ubuntu-latest
-    needs: [build-image]
-    steps:
-      - uses: gacts/install-podman@v1
+      - run: |
+          podman build --platform "${{ matrix.platform }}" --tag "$IMAGE_NAME:$IMAGE_TAG_ALPINE" \
+            --build-arg "BASE_IMAGE=docker.io/library/alpine:latest" .
+          podman save "$IMAGE_NAME:$IMAGE_TAG_ALPINE" > ./image-alpine.tar
 
-      - name: Login into ghcr.io
-        uses: gacts/run-and-post-run@v1
-        with:
-          run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin ghcr.io
-          post: podman logout ghcr.io
+      - uses: actions/upload-artifact@v3
+        with: {name: image-${{ matrix.name }}-alpine, path: ./image.tar, retention-days: 1}
 
-      - {uses: gacts/github-slug@v1, id: slug}
-
-      - name: Create the manifest
-        uses: gacts/run-and-post-run@v1
-        env:
-          IMAGE_TAG: ${{ steps.slug.outputs.version }}
-        with:
-          run: podman manifest create "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
-            "$GITHUB_IMAGE_NAME:amd64-${{ steps.slug.outputs.version }}"
-            "$GITHUB_IMAGE_NAME:arm64-${{ steps.slug.outputs.version }}"
-            "$GITHUB_IMAGE_NAME:armv6-${{ steps.slug.outputs.version }}"
-            "$GITHUB_IMAGE_NAME:armv7-${{ steps.slug.outputs.version }}"
-            "$GITHUB_IMAGE_NAME:386-${{ steps.slug.outputs.version }}"
-            "$GITHUB_IMAGE_NAME:s390x-${{ steps.slug.outputs.version }}"
-            "$GITHUB_IMAGE_NAME:ppc64le-${{ steps.slug.outputs.version }}"
-          post: podman manifest push --all "$GITHUB_IMAGE_NAME:$IMAGE_TAG" "docker://$GITHUB_IMAGE_NAME:$IMAGE_TAG"
+#  create-manifest:
+#    name: ✍ Create the manifest
+#    runs-on: ubuntu-latest
+#    needs: [build-image]
+#    steps:
+#      - uses: gacts/install-podman@v1
+#
+#      - name: Login into ghcr.io
+#        uses: gacts/run-and-post-run@v1
+#        with:
+#          run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin ghcr.io
+#          post: podman logout ghcr.io
+#
+#      - {uses: gacts/github-slug@v1, id: slug}
+#
+#      - name: Create the manifest
+#        uses: gacts/run-and-post-run@v1
+#        env:
+#          IMAGE_TAG: ${{ steps.slug.outputs.version }}
+#        with:
+#          run: podman manifest create "$GITHUB_IMAGE_NAME:$IMAGE_TAG"
+#            "$GITHUB_IMAGE_NAME:amd64-${{ steps.slug.outputs.version }}"
+#            "$GITHUB_IMAGE_NAME:arm64-${{ steps.slug.outputs.version }}"
+#            "$GITHUB_IMAGE_NAME:armv6-${{ steps.slug.outputs.version }}"
+#            "$GITHUB_IMAGE_NAME:armv7-${{ steps.slug.outputs.version }}"
+#            "$GITHUB_IMAGE_NAME:386-${{ steps.slug.outputs.version }}"
+#            "$GITHUB_IMAGE_NAME:s390x-${{ steps.slug.outputs.version }}"
+#            "$GITHUB_IMAGE_NAME:ppc64le-${{ steps.slug.outputs.version }}"
+#          post: podman manifest push --all "$GITHUB_IMAGE_NAME:$IMAGE_TAG" "docker://$GITHUB_IMAGE_NAME:$IMAGE_TAG"
 
 #  scan-image:
 #    name: Scan docker image
