@@ -62,7 +62,7 @@ jobs:
           podman save "$IMAGE_NAME:$IMAGE_TAG" > ./image.tar
 
       - uses: actions/upload-artifact@v3
-        with: {name: image-${{ matrix.name }}, path: ./image.tar, retention-days: 1}
+        with: {name: 'image-${{ matrix.name }}', path: ./image.tar, retention-days: 1}
 
       - run: |
           podman build --platform "${{ matrix.platform }}" --tag "$IMAGE_NAME:$IMAGE_TAG_ALPINE" \
@@ -70,7 +70,7 @@ jobs:
           podman save "$IMAGE_NAME:$IMAGE_TAG_ALPINE" > ./image-alpine.tar
 
       - uses: actions/upload-artifact@v3
-        with: {name: image-${{ matrix.name }}-alpine, path: ./image.tar, retention-days: 1}
+        with: {name: 'image-${{ matrix.name }}-alpine', path: ./image.tar, retention-days: 1}
 
 #  create-manifest:
 #    name: ✍ Create the manifest
