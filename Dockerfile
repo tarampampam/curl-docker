@@ -9,7 +9,7 @@ ARG BASE_IMAGE="scratch"
 FROM alpine:3.18 as builder
 
 # renovate: source=github-tags name=curl/curl versioning=regex:^(?:curl-)?(?<major>\d+)_(?<minor>\d+)_(?<patch>\d+)$ extractVersion=^(?:curl-)?(?<version>[\d_]+)$
-ENV CURL_VERSION="8_3_0"
+ENV CURL_VERSION="8_4_0"
 
 # install system dependencies
 RUN apk add \
