@@ -34,7 +34,7 @@ jobs: # Docs: <https://git.io/JvxXE>
 
       - run: docker save curl:local > ./docker-image.tar
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: docker-image
           path: ./docker-image.tar
