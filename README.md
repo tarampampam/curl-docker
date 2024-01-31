@@ -10,18 +10,23 @@
 [![Docker Pulls][badge_docker_pulls]][link_docker_hub]
 [![License][badge_license]][link_license]
 
-## Why this image created?
+## Why was this image created?
 
-As you probably know, `curl` consists of two parts - the library with the same name and dynamically linked executable file. For using `curl` in docker images based on `scratch` (empty file system) we have two options:
+As you may know, `curl` comprises two components: the library with the same name and a dynamically linked executable
+file. When using `curl` in Docker images based on `scratch` (empty file system), we have two options:
 
-- Put all required for `curl` libraries into the image
-- Compile `curl` as a **static** binary
+- Include all required libraries for `curl` in the image.
+- Compile `curl` as a **static** binary.
 
-This repository contains dockerfile with the second way (the main idea was [looked here](https://github.com/moparisthebest/static-curl)).
+This repository contains a Dockerfile using the second approach (the main idea was found [here](https://github.com/moparisthebest/static-curl)).
 
-> Important note: some `curl` features (like `gopher`, `imap`, `proxy`, and others were disabled) for binary file size reasons.
+> Important note: Some `curl` features (such as `gopher`, `imap`, `proxy`, and others) have been disabled for binary
+> file size reasons.
 
-Another important change is that when the `--fail` flag is used, the exit code on error is **1** _(instead of 22)_. You can read more details about the patch [here](patches/fail-exit-code.patch). This was made for use in docker healthcheck (the possible exit codes for docker healcheck are: 0 _(success, the container is healthy and ready for use)_ and 1 _(unhealthy - the container is not working correctly)_):
+Another important change is that when the `--fail` flag is used, the exit code on error is **1** (instead of 22). You
+can find more details about the patch [here](patches/fail-exit-code.patch). This change was made for use in Docker
+health checks (the possible exit codes for Docker health checks are: 0 for success, indicating the container is
+healthy and ready for use, and 1 for unhealthy, indicating the container is not working correctly):
 
 ```bash
 $ docker run --rm tarampampam/curl -s --fail --show-error https://httpbin.org/status/401
@@ -38,7 +43,7 @@ Exit code: 1
 | [GitHub Container Registry][link_github_containers] | `ghcr.io/tarampampam/curl` |
 | [Docker Hub][link_docker_tags]                      | `tarampampam/curl`         |
 
-> Images, based on the `alpine` image has a postfix `-alpine` in the tag name, eg.: `tarampampam/curl:8.0.1-alpine`.
+> Images, based on the `alpine` image has a postfix `-alpine` in the tag name, e.g.: `tarampampam/curl:8.0.1-alpine`.
 
 Following platforms for this image are available:
 
@@ -66,7 +71,7 @@ FROM scratch
 COPY --from=docker.io/containous/whoami:v1.5.0 /whoami /whoami
 
 # import curl from current repository image
-COPY --from=ghcr.io/tarampampam/curl:8.0.1 /bin/curl /bin/curl
+COPY --from=ghcr.io/tarampampam/curl:8.6.0 /bin/curl /bin/curl
 
 # Docs: <https://docs.docker.com/engine/reference/builder/#healthcheck>
 HEALTHCHECK --interval=5s --timeout=2s --retries=2 --start-period=2s CMD [ \
@@ -95,7 +100,8 @@ $ docker kill healthcheck-test
 
 ## Releasing
 
-New versions publishing is very simple - just make required changes in this repository and "publish" new release using repo releases page.
+New versions publishing is very simple - just make required changes in this repository and "publish" new release using
+repo releases page.
 
 Docker images will be build and published automatically.
 

@@ -15,7 +15,7 @@ concurrency:
 jobs: # Docs: <https://git.io/JvxXE>
   gitleaks:
     name: Gitleaks
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
@@ -24,7 +24,7 @@ jobs: # Docs: <https://git.io/JvxXE>
 
   build-image:
     name: Build docker image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -42,13 +42,11 @@ jobs: # Docs: <https://git.io/JvxXE>
 
   scan-image:
     name: Scan docker image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: [build-image]
     steps:
       - uses: actions/download-artifact@v4
-        with:
-          name: docker-image
-          path: .artifact
+        with: {name: docker-image, path: .artifact}
 
       - working-directory: .artifact
         run: docker load < docker-image.tar
@@ -61,7 +59,7 @@ jobs: # Docs: <https://git.io/JvxXE>
 
   try-to-use:
     name: Use docker image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: [build-image]
     steps:
       - uses: actions/download-artifact@v4
