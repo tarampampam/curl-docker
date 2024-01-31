@@ -1,8 +1,5 @@
-.editorconfig
-.git
-.github
-.idea
-.vscode
-temp
-tmp
-LICENSE
+## Ignore everything
+*
+
+## Except the following files and directories
+!/patches
