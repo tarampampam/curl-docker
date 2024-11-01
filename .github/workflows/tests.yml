@@ -51,7 +51,7 @@ jobs: # Docs: <https://git.io/JvxXE>
       - working-directory: .artifact
         run: docker load < docker-image.tar
 
-      - uses: anchore/scan-action@v4 # action page: <https://github.com/anchore/scan-action>
+      - uses: anchore/scan-action@v5 # action page: <https://github.com/anchore/scan-action>
         with:
           image: curl:local
           fail-build: true
