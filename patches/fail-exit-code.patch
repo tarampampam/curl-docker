@@ -1,11 +1,12 @@
 diff --git a/src/tool_operate.c b/src/tool_operate.c
-index e6ca575..4f3e65f 100644
+index a1212c9..16334d3 100644
 --- a/src/tool_operate.c
 +++ b/src/tool_operate.c
-@@ -622,6 +622,11 @@ static CURLcode post_per_transfer(struct GlobalConfig *global,
-   free(per->outfile);
-   free(per->uploadfile);
-
+@@ -772,6 +772,12 @@ skip:
+     free(per->errorbuffer);
+   curl_slist_free_all(per->hdrcbdata.headlist);
+   per->hdrcbdata.headlist = NULL;
++
 +  /* return exit code 1 when flag --fail is used */
 +  if (config->failonerror && (CURLE_HTTP_RETURNED_ERROR == result)) {
 +    result = CURLE_UNSUPPORTED_PROTOCOL;
@@ -13,4 +14,4 @@ index e6ca575..4f3e65f 100644
 +
    return result;
  }
-
+ 
