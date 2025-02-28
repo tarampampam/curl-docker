@@ -5,5 +5,5 @@
     ":rebaseStalePrs"
   ],
   "minimumReleaseAge": "1 day",
-  "schedule": ["weekly"]
+  "schedule": ["every weekend"]
 }
