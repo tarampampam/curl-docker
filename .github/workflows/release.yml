@@ -10,19 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - {uses: gacts/github-slug@v1, id: slug}
-
       - uses: docker/setup-qemu-action@v3
-
       - uses: docker/setup-buildx-action@v3
-
       - uses: docker/login-action@v3
         with: {username: '${{ secrets.DOCKER_LOGIN }}', password: '${{ secrets.DOCKER_PASSWORD }}'}
-
       - uses: docker/login-action@v3
         with: {registry: ghcr.io, username: '${{ github.actor }}', password: '${{ secrets.GITHUB_TOKEN }}'}
-
       - uses: docker/build-push-action@v6
         with:
           context: .
@@ -30,10 +24,14 @@ jobs:
           push: true
           platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v6,linux/arm/v7 # <-- important
           tags: |
-            tarampampam/curl:${{ steps.slug.outputs.version }}
             tarampampam/curl:latest
-            ghcr.io/${{ github.actor }}/curl:${{ steps.slug.outputs.version }}
+            tarampampam/curl:${{ steps.slug.outputs.version-major }}
+            tarampampam/curl:${{ steps.slug.outputs.version-major }}.${{ steps.slug.outputs.version-minor }}
+            tarampampam/curl:${{ steps.slug.outputs.version }}
             ghcr.io/${{ github.actor }}/curl:latest
+            ghcr.io/${{ github.actor }}/curl:${{ steps.slug.outputs.version-major }}
+            ghcr.io/${{ github.actor }}/curl:${{ steps.slug.outputs.version-major }}.${{ steps.slug.outputs.version-minor }}
+            ghcr.io/${{ github.actor }}/curl:${{ steps.slug.outputs.version }}
 
       - uses: docker/build-push-action@v6
         with:
@@ -43,10 +41,14 @@ jobs:
           platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v6,linux/arm/v7
           build-args: "BASE_IMAGE=alpine:latest"
           tags: |
-            tarampampam/curl:${{ steps.slug.outputs.version }}-alpine
             tarampampam/curl:latest-alpine
-            ghcr.io/${{ github.actor }}/curl:${{ steps.slug.outputs.version }}-alpine
+            tarampampam/curl:${{ steps.slug.outputs.version-major }}-alpine
+            tarampampam/curl:${{ steps.slug.outputs.version-major }}.${{ steps.slug.outputs.version-minor }}-alpine
+            tarampampam/curl:${{ steps.slug.outputs.version }}-alpine
             ghcr.io/${{ github.actor }}/curl:latest-alpine
+            ghcr.io/${{ github.actor }}/curl:${{ steps.slug.outputs.version-major }}-alpine
+            ghcr.io/${{ github.actor }}/curl:${{ steps.slug.outputs.version-major }}.${{ steps.slug.outputs.version-minor }}-alpine
+            ghcr.io/${{ github.actor }}/curl:${{ steps.slug.outputs.version }}-alpine
 
   binary-files:
     name: Publish the binary file (${{ matrix.platform }})
@@ -62,19 +64,14 @@ jobs:
           - linux/arm/v7
     steps:
       - uses: actions/checkout@v4
-
       - {uses: gacts/github-slug@v1, id: slug}
-
       - uses: docker/login-action@v3
         with: {registry: ghcr.io, username: '${{ github.actor }}', password: '${{ secrets.GITHUB_TOKEN }}'}
-
       - run: |
           docker pull --platform "${{ matrix.platform }}" ghcr.io/${{ github.actor }}/curl:${{ steps.slug.outputs.version }}
           docker create --name app --platform "${{ matrix.platform }}" ghcr.io/${{ github.actor }}/curl:${{ steps.slug.outputs.version }}
           docker cp app:/bin/curl ./curl
-
       - {uses: gacts/github-slug@v1, id: filename, with: {to-slug: 'curl-${{ matrix.platform }}'}}
-
       - name: Upload the binary file to the release
         uses: svenstaro/upload-release-action@v2
         with:
