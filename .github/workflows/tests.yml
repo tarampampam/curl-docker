@@ -17,7 +17,7 @@ jobs: # Docs: <https://git.io/JvxXE>
     name: Gitleaks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with: {fetch-depth: 0}
 
       - uses: gacts/gitleaks@v1 # Action page: <https://github.com/gacts/gitleaks>
@@ -26,7 +26,7 @@ jobs: # Docs: <https://git.io/JvxXE>
     name: Build docker image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - run: docker build -f ./Dockerfile --tag curl:local .
 
@@ -45,7 +45,7 @@ jobs: # Docs: <https://git.io/JvxXE>
     runs-on: ubuntu-latest
     needs: [build-image]
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with: {name: docker-image, path: .artifact}
 
       - working-directory: .artifact
@@ -62,7 +62,7 @@ jobs: # Docs: <https://git.io/JvxXE>
     runs-on: ubuntu-latest
     needs: [build-image]
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           name: docker-image
           path: .artifact
