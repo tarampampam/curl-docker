@@ -2,6 +2,19 @@
   <img src="https://curl.se/logo/curl-logo.svg" width="256" alt="" />
 </p>
 
+> [!WARNING]
+> This repository is no longer maintained. The reason is quite simple - the main purpose of this image was to
+> provide a static binary of `curl` for use in `scratch`-based images as a healthcheck, but in my opinion,
+> `curl` is too large for this purpose (~6 MB). Instead of this image, I recommend using [microcheck][microcheck],
+> a tiny (~75 KB, in **80 times smaller**) HTTP healthcheck utility with some additional features, developed by me.
+>
+> To avoid breaking existing integrations, the Docker image will remain available on both Docker Hub and GitHub
+> Container Registry, but no further updates will be made.
+>
+> GG;HF!
+
+[microcheck]:https://github.com/tarampampam/microcheck
+
 # Docker image with [curl][link_curl]
 
 [![Build Status][badge_build_status]][link_build_status]
